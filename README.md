@@ -5,7 +5,7 @@ Library for ADXL362 accelerometer: unique because of it's
 - autonomous motion switch functionality. 
 
 Thoroughly tested low memory footprint library, complete implementation of datasheet / functionality.
-Focus on easy of use and easy debugging (every error has a unique negative status code returned by most functions)
+Focus on ease of use and easy debugging (every error has a unique negative status code returned by most functions)
 
 ## Hardware
 - SparkFun Triple Axis Accelerometer Breakout - ADXL362 (SEN-11446) https://www.sparkfun.com/products/11446
@@ -30,9 +30,7 @@ And uncomment:
 
 //#define ADXL362_HASHMAPLIBINSTALLED
 
-This setting will cause all written registry values to be read back and checked if correctly written.
-
-Will slow down performance / energy usage so might not be suitable for production.
+This setting will cause all written registry values to be read back and checked if correctly written. Will slow down performance / energy usage so might not be suitable for production.
 
 //#define ADXL362_VERIFY_REG_READBACK
 
@@ -49,7 +47,7 @@ Enable build in hamming error detection
 
 //#define ADXL362_VERIFY_REG_WRITES_HAMMING
 
-Skip writing the most significant byte of all (_H registers) (UNTESTED)
+Skip writing the most significant byte of all MSB registers (_H registers) (UNTESTED)
 
 //ADXL362_POWERSAVE_SKIPWRITE_MSB
 
@@ -67,7 +65,7 @@ My measurements identified some corrections to the wakeupmode ODR and the time t
 - Functions / parameters should not allow options/combinations that the accelerometer cannot execute
 - All functions return a unique negative status (if possible) value when an error occured, and exit the function immediately after that
   - this makes it easy to look for which problem occured and fix it
-- Start with debugging on allowing for extra checks of correct parameter combinations.
+- Development: start with debug mode 'on', allowing for extra checks of correct parameter combinations.
 - as little RAM usage as possible
 - as little flash usage as possible
 
