@@ -241,7 +241,7 @@ public:
 
     //implementation of autonomous motion switch example page 36 of datasheet (defaults are settings from example)
     //page 17: Used in conjunction with loop mode, this configuration implements a trivial, autonomous motion activated switch, as shown in Figure 43.
-    short activateAutonomousMotionSwitch(uint16_t minForceInMg = 250, uint16_t maxFroceInMg = 150
+    short activateAutonomousMotionSwitch(uint16_t minForceInMg = 250, uint16_t maxForceInMg = 150
     									, uint32_t inActminTimeInMs = SEC_TO_MS(5), bool linkMode=false, bool autoSleep = false, bandwidth bandwidthInHz = ad_bandwidth_hz_6_wakeup_ultralowpower);
 
     //Datasheet page 37:

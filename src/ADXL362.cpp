@@ -96,7 +96,7 @@ short ADXL362::activateMeasure(bandwidth bandwidthInHz, measurementRange measure
 //default example, motion switch, freefall etc.
 //starts with inactivity!
 //range does not really matter here, noise reduction cant be used here
-short ADXL362::activateAutonomousMotionSwitch(uint16_t minForceInMg, uint16_t maxFroceInMg, uint32_t inActminTimeInMs
+short ADXL362::activateAutonomousMotionSwitch(uint16_t minForceInMg, uint16_t maxForceInMg, uint32_t inActminTimeInMs
 												,bool linkMode, bool autoSleep, bandwidth bandwidthInHz) {
 	short status=1;
 
@@ -113,7 +113,7 @@ short ADXL362::activateAutonomousMotionSwitch(uint16_t minForceInMg, uint16_t ma
 	if (status <= 0) return status;
 
 	//this just keeps the accelerometer awake until inactivity detected for inactmintimeinms
-	status = configureInActivity(config, maxFroceInMg, inActminTimeInMs);
+	status = configureInActivity(config, maxForceInMg, inActminTimeInMs);
 	if (status <= 0) return status;
 
 
