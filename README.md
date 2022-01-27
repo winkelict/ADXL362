@@ -16,15 +16,21 @@ Start measuring as easy as:
 	acceleroMeter.activateMeasure();
 	MeasurementInMg xyz = acceleroMeter.getXYZ(ad_range_2G);
 	
+RAM usage: 1 byte, flash usage: 1162 bytes (measured on Pro Mini 3.3V) / debug mode off
+	
 Or use it as an autonomous motion switch with zero configuration (settings of example page 36 of datasheet):
 
 	acceleroMeter.init();
 	acceleroMeter.activateAutonomousMotionSwitch();
+
+RAM usage: 5 bytes, flash usage: 2714 bytes (measured on Pro Mini 3.3V) / debug mode off
 	 
 ## Hardware
+- ADXL362 datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl362.pdf
+
 - SparkFun Triple Axis Accelerometer Breakout - ADXL362 (SEN-11446) https://www.sparkfun.com/products/11446
 - SparkFun Wake on Shake (SEN-11447) - https://www.sparkfun.com/products/11447
-- Breakout boards also available available on Ebay at a much lower price! 
+- Tested with Pro Mini 3.3V 8Mhz and Seeeduino ARM Cortex-M0+
 
 The ADXL362 uses the least power on lower voltages and can handle a maximum of 3.6V.
 The sparkfun breakout board does not have a voltage regulator so **be careful** using lithium-ion / LiPo batteries.
@@ -37,7 +43,7 @@ Possible options
 
 ST offers some ultra low power regulators: https://www.st.com/en/power-management/low-iq-ldo-regulators.html
 - Lowest power: STLQ020 (0,3uA quiescent) , SOT323-5L, not available in SOT23-5L afaik
-- Suitable for ebay breakout board voltage regulator replacement: STLQ015 (1.0uA quiescent), SOT23-5L (pick one with a dropout voltage below 3.0 ?)
+- SOT23-5L: STLQ015 (1.0uA quiescent), SOT23-5L (pick one with a dropout voltage below 3.0 ?)
 
 My (test) setup:
 - Sparkfun breakout (SEN-11446)
@@ -274,8 +280,8 @@ These might have to be adjusted for your specific chip.
 - All functions return a unique negative status (if possible) value when an error occurred, and exit the function immediately after that
   - this makes it easy to look for which problem occurred and fix it
 - Development: start with debug mode 'on', allowing for extra checks of correct parameter combinations.
-- as little RAM usage as possible
-- as little flash usage as possible
+- as little RAM usage as possible (+-5 bytes)
+- as little flash usage as possible (1162 measuring only, 2714 bytes for autonomous motion switch)
 
 ## TODO's
 - test FIFO functionality
