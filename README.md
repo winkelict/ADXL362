@@ -139,15 +139,15 @@ The library functions are set up in such a way that the activate/configure funct
 The order of the function arguments are in order of likely to be most used to least used.
 For example, activateAutonomousMotionSwitch has the following parameters:
 
-    short activateAutonomousMotionSwitch(uint16_t minForceInMg = 250, uint16_t maxFroceInMg = 150
-    									, uint32_t inActminTimeInMs = SEC_TO_MS(5), bool linkMode=false, bool autoSleep = false, bandwidth bandwidthInHz = ad_bandwidth_hz_6_wakeup_ultralowpower);
+	short activateAutonomousMotionSwitch(uint16_t minForceInMg = 250, uint16_t maxFroceInMg = 150
+	  									, uint32_t inActminTimeInMs = SEC_TO_MS(5), bool linkMode=false, bool autoSleep = false, bandwidth bandwidthInHz = ad_bandwidth_hz_6_wakeup_ultralowpower);
 
 Most likely to be changed are the activity / inactivity settings, like so:
 
 	acc.activateAutonomousMotionSwitch(150,250,2000);
 	
-Which means: activate (awake=1) when a force detected of at least 150mg and deactivate when no force more than 250mg detected for at least 2.0 seconds
-Attention: in bandwidth other than ad_bandwidth_hz_6_wakeup_ultralowpower also a minimum time to activate can be set, for this see: custom detection.
+Which means: activate (awake=1) when a force detected of at least 150mg and deactivate when no force more than 250mg detected for at least 2.0 seconds.
+Attention: when using a bandwidth other than ad_bandwidth_hz_6_wakeup_ultralowpower also a minimum time to activate can be set, for this see: custom detection.
 
 The following 2 settings are linkMode and autoSleep: acc.activateAutonomousMotionSwitch(150,250,2000,linkmode,autosleep)
 - linkMode: true: the adxl362 functions as an autonomous motion switch but awake 0/1 has to be acknowledged by calling:
@@ -181,8 +181,8 @@ For example, freefall detection in wake up mode:
 ### Custom detection
 See example ino file: **AdvancedDetection**
 
-    short activateCustomDetection(bandwidth bandwidthInHz, sequentialMode smode, bool autoSleep
-    						, uint16_t minForceInMg, uint32_t actminTimeInMs
+	short activateCustomDetection(bandwidth bandwidthInHz, sequentialMode smode, bool autoSleep
+	    					, uint16_t minForceInMg, uint32_t actminTimeInMs
 							, uint16_t maxForceInMg, uint32_t inActminTimeInMs
 							, status int1Status = ad_status_active, status int2Status = ad_status_inactive, bool activeLow = false, bool absoluteMode = false
 							, measurementRange measurementRangeInG = ad_range_2G, noiseMode noiseMode = ad_noise_normal);
@@ -207,6 +207,7 @@ Use the library this way only if:
 - You need different active low/high configuration for each interrupt
 - You need a different absolute/referenced configuration for each interrupt
 - You need to use an external clock or sample trigger using the interrupt pins as input (UNTESTED!)
+- You will be using FIFO functionality (UNTESTED)
 
 Use the implementation of the activateCustomDetection in ADXL362.cpp as a guide so you are able to adjust:
 - [EXTERNALODRINHZ] (see datasheet for how to calculate)
@@ -258,7 +259,8 @@ At request can make an SPI stub available which will simulate the accelerometer 
 
 	//#define ADXL362_USE_SPI_STUB
 
-My measurements identified some corrections to the wakeup mode ODR and the time thresholds, these might have to be adjusted for your specific chip.
+My measurements identified some corrections to the wakeup mode ODR and the time thresholds so that act/inact times passed to the functions will be accurate. 
+These might have to be adjusted for your specific chip.
 
 	#define ADXL362_WAKEUPMODE_ACTUALODR 4.20778f
 
