@@ -1,7 +1,8 @@
 Winkel ICT ADXL362
 ==================
-Library for ADXL362 accelerometer: unique because of it's 
-- ultralow (lowest of +/- 120 reviewed datasheets) power (0,270uA) usage
+
+Library for ADXL362 accelerometer: unique because of its:
+- ultralow (lowest of +/- 62 reviewed accelerometer datasheets) power (0,270uA) usage
 - autonomous motion switch functionality. 
 
 Together allowing for extremely long battery life.
@@ -9,19 +10,44 @@ Together allowing for extremely long battery life.
 Thoroughly tested low memory footprint library, complete implementation of datasheet / functionality.
 Focus on ease of use and easy debugging (every error has a unique negative status code returned by most functions)
 
+Start measuring as easy as:
+
+	acceleroMeter.init();
+	acceleroMeter.activateMeasure();
+	MeasurementInMg xyz = acceleroMeter.getXYZ(ad_range_2G);
+	
+Or use it as an autonomous motion switch with zero configuration (settings of example page 36 of datasheet):
+
+	acceleroMeter.init();
+	acceleroMeter.activateAutonomousMotionSwitch();
+	 
 ## Hardware
 - SparkFun Triple Axis Accelerometer Breakout - ADXL362 (SEN-11446) https://www.sparkfun.com/products/11446
 - SparkFun Wake on Shake (SEN-11447) - https://www.sparkfun.com/products/11447
 - Breakout boards also available available on Ebay at a much lower price! 
 
-TODO:
-- voltage regulators STLQ20/15 and LifePo4 batteries
-  (lowest power usage on low (2.0V) voltage.
-  
+The ADXL362 uses the least power on lower voltages and can handle a maximum of 3.6V.
+The sparkfun breakout board does not have a voltage regulator so **be careful** using lithium-ion / LiPo batteries.
+The ebay breakout boards use a voltage regulator but this might defeat the ADXL362's lost power usage purposes.
+
+Possible options
+- Use a +-2.0V power source
+- Use a LiFePO4 power source which stays under 3.6V fully charged (no regulation needed) (charger: https://www.ebay.com/itm/192121823376 (untested))
+- Use an ultra low power voltage regulator, examples:
+
+ST offers some ultra low power regulators: https://www.st.com/en/power-management/low-iq-ldo-regulators.html
+- Lowest power: STLQ020 (0,3uA quiescent) , SOT323-5L, not available in SOT23-5L afaik
+- Suitable for ebay breakout board voltage regulator replacement: STLQ015 (1.0uA quiescent), SOT23-5L (pick one with a dropout voltage below 3.0 ?)
+
+My (test) setup:
+- Sparkfun breakout (SEN-11446)
+- LiPo battery
+- STLQ020C22R (2.2volt), capacitors: Vin: 1uF ceramic / Vout: 1uf ceramic + 10uF tantalum 
+
 ## Quick start
 Important deviations from datasheet terminology:
 - link/loop is called sequential (see configureSequential)
-- wakeup mode (0,270 uA) is implemented as just a bandwith / odr mode: 
+- wakeup mode (0,270 uA) is implemented as just a bandwidth / odr setting as nearly almost functionality is still available (except for minimum activity time)
 
 
 	ad_bandwidth_hz_6_wakeup_ultralowpower
@@ -34,7 +60,7 @@ For most use-cases the 4 main functions cover all functionality:
 
 In combination with:
 
-For measuring:
+For measuring (activateMeaure):
 - getXYZ
 - getTemperature
 
@@ -63,16 +89,161 @@ This setting will cause all written registry values to be read back and checked 
 	#define ADXL362_VERIFY_REG_READBACK
 
 ### Measuring XYZ/Temp
-See example ino file: 
+See example ino file: **BasicMeassure**
+
+As pointed out in the introduction:
+
+	acceleroMeter.init();
+	acceleroMeter.activateMeasure();
+	MeasurementInMg xyz = acceleroMeter.getXYZ(ad_range_2G);
+
+Recommended implementation would be to use a function to check the return status of each function call, like:
+
+	void check(short code) {
+	  if (code <= 0) {
+	    if (code == -110)
+	      //do something,print when debugging?: device not connected / bad power supply?
+	    else if (code >= -104 && code <= -102)
+	      //do somethin,print when debugging?: bad power supply?
+	    else
+	      //lookup the negative status code in ADXL362.cpp to find the root cause
+	  }
+	}
+	
+**Do not continue when a function returns a negative or 0 status**, there is something wrong with your setup or code: fix that first.
+
+Using a function of this type the recommended way to setup measurement is:
+
+	check(acceleroMeter.init());
+	check(acceleroMeter.activateMeasure());
+	
+	MeasurementInMg xyz = acceleroMeter.getXYZ(ad_range_2G);
+
+This way you do not end up in a debugging nightmare.
+
+The cause of the error can be identified by looking up the negative status code in the source code (ADXL362.cpp)
 
 ### Motion Switch
-See example ino file:
+See example ino file: **AutonomousMotionSwitch**
+
+The easiest way to set up an autonomous motion switch is to call activateAutonomousMotionSwitch without parameters.
+This way it configures the ADXL362 like on example page 36 of the datasheet (threshold values might be slightly different, see Misc settings):
+
+	acceleroMeter.init();
+	acceleroMeter.activateAutonomousMotionSwitch();
+	
+Again, check for returned error codes! (see Measuring XYZ/Temp).
+Interrupts will occur sequential: Activity->Inactivity interrupts will always occur in this order. Awake=0 (falling) will always follow awake=1 (rising) interrupt.
+
+The library functions are set up in such a way that the activate/configure functions have as many defaults as possible.
+The order of the function arguments are in order of likely to be most used to least used.
+For example, activateAutonomousMotionSwitch has the following parameters:
+
+    short activateAutonomousMotionSwitch(uint16_t minForceInMg = 250, uint16_t maxFroceInMg = 150
+    									, uint32_t inActminTimeInMs = SEC_TO_MS(5), bool linkMode=false, bool autoSleep = false, bandwidth bandwidthInHz = ad_bandwidth_hz_6_wakeup_ultralowpower);
+
+Most likely to be changed are the activity / inactivity settings, like so:
+
+	acc.activateAutonomousMotionSwitch(150,250,2000);
+	
+Which means: activate (awake=1) when a force detected of at least 150mg and deactivate when no force more than 250mg detected for at least 2.0 seconds
+Attention: in bandwidth other than ad_bandwidth_hz_6_wakeup_ultralowpower also a minimum time to activate can be set, for this see: custom detection.
+
+The following 2 settings are linkMode and autoSleep: acc.activateAutonomousMotionSwitch(150,250,2000,linkmode,autosleep)
+- linkMode: true: the adxl362 functions as an autonomous motion switch but awake 0/1 has to be acknowledged by calling:
+ 
+ 
+	acceleroMeter.isAwake();
+	
+- linkMode: false: functioning in loop mode, the accelerometer will automatically lower the interrupt pin when inactivity is detected for a certain amount of time, regardless if the Arduino did anything.
+- autoSleep: when inactive (looking for activity) the chip will be in wakeup mode: ad_bandwidth_hz_6_wakeup_ultralowpower, when active it will be in the bandwidth set in the next argument: bandwidth.
+  An error will occur when autosleep = true and bandwidth = ad_bandwidth_hz_6_wakeup_ultralowpower, as this is the active bandwidth it will equal wake up mode instead of autosleep.
+
+The bandwidth setting is the last one, this can be used together with autoSleep to set the bandwidth to the accuracy you need when the ADXL362 is active (awake = 1).
 
 ### Freefall detection
-See example ino file:
+See example ino file: **FreeFall**
+
+Can be called without arguments, settings will be equal to Datasheet page 37 (except for small differences in threshold, see Misc settings).
+
+	acceleroMeter.init();
+	acceleroMeter.activateFreeFallDetection();
+
+Just like the autonomous motion switch more customizations are possible:
+
+	short activateFreeFallDetection(uint16_t maxForceInMg = 600, uint32_t minTimeInMs = 30, bandwidth bandwidthInHz = ad_bandwidth_hz_50_lowpower);
+
+For example, freefall detection in wake up mode:
+
+	acceleroMeter.activateFreeFallDetection(600,30,ad_bandwidth_hz_6_wakeup_ultralowpower);
+	
 
 ### Custom detection
-See example ino file:
+See example ino file: **AdvancedDetection**
+
+    short activateCustomDetection(bandwidth bandwidthInHz, sequentialMode smode, bool autoSleep
+    						, uint16_t minForceInMg, uint32_t actminTimeInMs
+							, uint16_t maxForceInMg, uint32_t inActminTimeInMs
+							, status int1Status = ad_status_active, status int2Status = ad_status_inactive, bool activeLow = false, bool absoluteMode = false
+							, measurementRange measurementRangeInG = ad_range_2G, noiseMode noiseMode = ad_noise_normal);
+
+Minimum arguments:
+
+	acceleroMeter.activateCustomDetection(ad_bandwidth_hz_25, ad_seq_none, false, 100, 0, 150, 4000);
+	
+Interrupts can be configured manually here:
+- int1Status and int2Status can be manually selected, see status enum in ADXL362.h
+- both interrupts can be active low or high
+- both interrupts can be in absolute or referenced mode
+- measurement range can be selected
+- noise mode can be selected
+
+Some parameter combinations might result in a negative status code as the chip cannot execute them, so please check for the resulting status code. 
+
+This function should cover most use-cases, when more specific interrupt configuration is needed, see the next chapter:
+
+### Advanced detection
+Use the library this way only if:
+- You need different active low/high configuration for each interrupt
+- You need a different absolute/referenced configuration for each interrupt
+- You need to use an external clock or sample trigger using the interrupt pins as input (UNTESTED!)
+
+Use the implementation of the activateCustomDetection in ADXL362.cpp as a guide so you are able to adjust:
+- [EXTERNALODRINHZ] (see datasheet for how to calculate)
+- [ABSOLUTE?]
+- [ACTIVELOW?]
+- [EXTERNALCLOCK?]
+- [EXTERNALSAMPLETRIGGER?]
+- set all other variables
+
+When using the [EXTERNAL..] parameters pass NULL for status. 
+
+	sequentialMode smode = seq_none;
+	short status=1;
+	ADXL362Config config;
+
+	if (smode != ad_seq_none)
+		config =  configureSequentialMode((smode == ad_seq_link), bandwidthInHz, autoSleep, measurementRangeInG, noiseMode, [EXTERNALODRINHZ]);
+	else
+		config =  configure(bandwidthInHz, measurementRangeInG, noiseMode, [EXTERNALODRINHZ]);
+
+	if (config.status <= 0) return config.status;
+
+	status = configureActivity(config, minForceInMg, actminTimeInMs, [ABSOLUTE?]);
+	if (status <= 0) return status;
+
+	status = configureInActivity(config, maxForceInMg, inActminTimeInMs, [ABSOLUTE?]);
+	if (status <= 0) return status;
+
+	status = configureInterrupt1(config, int1Status, [ACTIVELOW?],[EXTERNALCLOCK?]);
+	if (status <= 0) return status;
+
+	status = configureInterrupt2(config, int2Status, [ACTIVELOW?],[EXTERNALSAMPLETRIGGER?]);
+	if (status <= 0) return status;
+
+	status = activateMode(config);
+
+activateMode always has to be called to activate your configuration (uses POWER_CTL register).
 
 ### Misc settings (ADXL362.h)
 Enable build in hamming error detection
@@ -87,7 +258,7 @@ At request can make an SPI stub available which will simulate the accelerometer 
 
 	//#define ADXL362_USE_SPI_STUB
 
-My measurements identified some corrections to the wakeupmode ODR and the time treshholds, these might have to be adjusted for your specific chip.
+My measurements identified some corrections to the wakeup mode ODR and the time thresholds, these might have to be adjusted for your specific chip.
 
 	#define ADXL362_WAKEUPMODE_ACTUALODR 4.20778f
 
@@ -97,9 +268,9 @@ My measurements identified some corrections to the wakeupmode ODR and the time t
 - Functions / parameters should not allow options/combinations that the accelerometer cannot execute
 - As many default values for parameters as possible, in order from most to least used (estimated) allowing for quick implementation for most use cases while still enabling all functionality.
 - Intuitive usage of all code, functions, parameters
-  - when not in conflict with first rule, use datasheet terminology
-- All functions return a unique negative status (if possible) value when an error occured, and exit the function immediately after that
-  - this makes it easy to look for which problem occured and fix it
+  - when not in conflict with first rule, use datasheet terminology
+- All functions return a unique negative status (if possible) value when an error occurred, and exit the function immediately after that
+  - this makes it easy to look for which problem occurred and fix it
 - Development: start with debug mode 'on', allowing for extra checks of correct parameter combinations.
 - as little RAM usage as possible
 - as little flash usage as possible
