@@ -53,7 +53,6 @@ ADXL362::ADXL362(byte slaveSelectPin, SPIClass *spi) //, RHGenericSPI& spi
 		_ss(slaveSelectPin),
 		_spi(spi)
 {
-	//_irq = interruptPin;
 }
 
 
@@ -66,17 +65,14 @@ short ADXL362::init()
     digitalWrite(_ss, HIGH);
     _spi->begin();
 
-    // Write to SOFT RESET, "R"
+
     status = softReset();
     if (status <= 0) return status;
 
-    //first reset
     status = checkDevice();
     if (status <= 0) return status;
 
     _powerModeInProgress = false;
-
-    //TODO: new name: selectedRange = 2; // Measurement Range: +/- 2g (reset default).
 
     return status;
 }
