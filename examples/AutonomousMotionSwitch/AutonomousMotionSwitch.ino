@@ -9,6 +9,7 @@ ADXL362 acc(SPI_SLAVE_SELECT_PIN);
 
 //TODO: comment out #define ADXL362_DEBUG at top of library .h file after code tested and working
 void setup() {
+  //TODO: adjust baud rate to your serial monitor setting
   Serial.begin(4800);
   while (!Serial);  
 
