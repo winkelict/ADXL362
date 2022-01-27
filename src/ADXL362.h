@@ -29,13 +29,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 //comment out to remove serial monitor prints, and function pre-condition checks
-//#define ADXL362_DEBUG
+#define ADXL362_DEBUG
 
 //needed for printregisters debugging function
 //download here: https://playground.arduino.cc/Code/HashMap/
 //#define ADXL362_HASHMAPLIBINSTALLED
 
-//#define ADXL362_VERIFY_REG_READBACK
+#define ADXL362_VERIFY_REG_READBACK
 //#define ADXL362_VERIFY_REG_WRITES_HAMMING
 
 //untested, if never using values that high, can skip writing it (but then not sure if MSB is 0)
