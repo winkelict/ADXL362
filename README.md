@@ -34,7 +34,6 @@ RAM usage: 5 bytes, flash usage: 2714 bytes (measured on Pro Mini 3.3V) / debug 
 
 The ADXL362 uses the least power on lower voltages and can handle a maximum of 3.6V.
 The sparkfun breakout board does not have a voltage regulator so **be careful** using lithium-ion / LiPo batteries.
-The ebay breakout boards use a voltage regulator but this might defeat the ADXL362's lost power usage purposes.
 
 Possible options
 - Use a +-2.0V power source
