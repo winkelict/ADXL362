@@ -51,7 +51,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ADXL362_TIMECORRECTION_INPERCENT -10
 
 
-#include <Arduino.h>
 #include "ADXL362Reg.h"
 
 #ifdef ADXL362_USE_SPI_STUB
@@ -111,6 +110,13 @@ typedef enum
 } measurementRange;
 #define AD_RANGE_OFF ADXL362_FILTER_CTL_RANGE(0xFF)
 
+/* Datasheet (wakeup mode):
+ * Switch into full bandwidth measurement mode
+• Signal an interrupt to a microcontroller
+• Wake up downstream circuitry, depending on the configuration
+• In wake-up mode, all accelerometer features are available with the exception of the activity timer.
+All registers can be accessed, and real-time data can be read and/or stored in the FIFO.
+ */
 //Bandwidth is the bandwidth of the analog digital converter, the higher the less aliasing (more data points) / the more accuracy
 //the higher the ODR, the more power consumption
 //confusing part: ODR is always halved, can be halved one more time with HALF_BW = 1/4
@@ -133,13 +139,7 @@ typedef enum
 } bandwidth;
 #define AD_BANDWIDTH_OFF ADXL362_FILTER_CTL_ODR(0xFF) | ADXL362_FILTER_CTL_HALF_BW //=12.5hz all thats 1 here is going to be set to 0
 
-/* Datasheet (wakeup mode):
- * Switch into full bandwidth measurement mode
-• Signal an interrupt to a microcontroller
-• Wake up downstream circuitry, depending on the configuration
-• In wake-up mode, all accelerometer features are available with the exception of the activity timer.
-All registers can be accessed, and real-time data can be read and/or stored in the FIFO.
- */
+
 //when changed from standby to any other mode, settings in write registers will become active
 //measurement mode needs to be on also for wakeup and autosleep mode, as otherwise it could be in standby mode
 //For internal use only!
@@ -170,7 +170,6 @@ typedef enum {
 } noiseMode; //the more noise reduction the more power is used
 #define AD_NOISE_OFF ADXL362_POWER_CTL_LOW_NOISE(0xFF)
 
-//TODO: active / inactive usage
 //bitmask's are the same for status,intmap1 and intmap2 registers
 typedef enum {
 	ad_status_awake 		= ADXL362_STATUS_AWAKE, //example : motion switch, bit 7 is for other purposes
@@ -262,7 +261,7 @@ public:
 
 
     /**************** SEQUENTIAL MODE: adds functionality to default mode  ***********************/
-    //Supports awake bit, the only wake an autonomous mode can be configured
+    //Supports awake bit
     //as this interrupt/bit stays on an can act like a on/off switch in addition to an interrupt unlike an interrupt
     ADXL362Config configureSequentialMode(bool linkMode = true, bandwidth bandwidthInHz = ad_bandwidth_hz_25 , bool autoSleep = false
     											, measurementRange measurementRangeInG = ad_range_2G

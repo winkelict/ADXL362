@@ -33,27 +33,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 
-
-//typedef unsigned char uint8_t;
-
-
-/******************************************************************************/
-/************************* Variables Declarations *****************************/
-/******************************************************************************/
-
-//TODO: ADXL362::_selectedRange (and make it a member variable?)
-//REMOVED FOR NOW, THER ARE JUST 3 SETTINGS / char selectedRange = 0;
-
-
-
-/******************************************************************************/
 /************************ Functions Definitions *******************************/
-/******************************************************************************/
+
 
 /*
- * Default accelerometer configuration
- *
- * - 0x13 = 00 0 1 0 011
+ * Default accelerometer configuration (after: power on, init and softReset)
  *
  * - range : 2g
  * - bandwidth : 1/4
@@ -62,6 +46,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * - power mode: standby
  * - noise mode: normal
+ *
  */
 ADXL362::ADXL362(byte slaveSelectPin, SPIClass *spi) //, RHGenericSPI& spi
     :
@@ -96,9 +81,9 @@ short ADXL362::init()
     return status;
 }
 
-/******************************************************************************/
+
 /************************ Preconfigured Modes *********************************/
-/******************************************************************************/
+
 
 short ADXL362::activateMeasure(bandwidth bandwidthInHz, measurementRange measurementRangeInG, noiseMode noiseMode) {
 	short status=1;
@@ -198,9 +183,8 @@ short ADXL362::activateCustomDetection(bandwidth bandwidthInHz, sequentialMode s
 	return status;
 }
 
-/************************************************************************************/
+
 /************************ Configuration Functions (best executed in this order)******/
-/***********************************************************************************/
 
 
 ADXL362Config ADXL362::configureSequentialMode(bool linkMode, bandwidth bandwidthInHz, bool autoSleep,
@@ -250,15 +234,7 @@ ADXL362Config ADXL362::configureSequentialMode(bool linkMode, bandwidth bandwidt
 short ADXL362::isAwake(sequentialMode sequentialmode) {
 	if (!sequentialmode)
 		return -54;
-	//if (config.status <= 0)
-	//	return -54;
-/*
-	#ifdef ADXL362_DEBUG
-	//in meaurement mode always awake, does not make sense to check
-	if (config.powermode == ad_power_on || config.powermode == ad_power_standby)
-		return -55;
-	#endif
-*/
+
 	return hasStatus(ad_status_awake);
 }
 
@@ -483,101 +459,18 @@ short ADXL362::activateMode(ADXL362Config config) {
 
 //clears/acknowledges interrupt
 short ADXL362::isActInterrupt() {
-	//if (config.status <= 0)
-	//	return -50;
-
-	/*wrong?
-	#ifdef ADXL362_DEBUG
-	//interrupt wont occur in these modes
-	if (config.mode != ad_power_on)
-		return -51;
-	#endif
-	*/
 	return hasStatus(ad_status_active);
 }
 
 //clears/acknowledges interrupt
 short ADXL362::isInactInterrupt() {
-	//if (config.status <= 0)
-	//	return -52;
-
-	/*wrong?
-	#ifdef ADXL362_DEBUG
-	//interrupt wont occur in these modes
-	if (config.mode != ad_power_on)
-		return -53;
-	#endif
-	*/
 	return hasStatus(ad_status_inactive);
 }
 
 
-/****************************************************************************/
+
 /************************ STATUS Functions *********************************/
-/******************************************************************************/
-#ifdef ADXL362_DEBUG
-#ifdef ADXL362_HASHMAPLIBINSTALLED
-#include <HashMap.h>
-void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
-	#define NR_OF_REGISTERS 34
 
-	HashType<int,char*> regnameraw[NR_OF_REGISTERS];
-	HashMap<int,char*> registryNames = HashMap<int,char*>( regnameraw , NR_OF_REGISTERS );
-
-	registryNames[0](0x00,"ADXL362_REG_DEVID_AD          ");
-	registryNames[1](0x01,"ADXL362_REG_DEVID_MST         ");
-	registryNames[2](0x02,"ADXL362_REG_PARTID            ");
-	registryNames[3](0x03,"ADXL362_REG_REVID             ");
-	registryNames[4](0x08,"ADXL362_REG_XDATA             ");
-	registryNames[5](0x09,"ADXL362_REG_YDATA             ");
-	registryNames[6](0x0A,"ADXL362_REG_ZDATA             ");
-	registryNames[7](0x0B,"ADXL362_REG_STATUS            ");
-	registryNames[8](0x0C,"ADXL362_REG_FIFO_L            ");
-	registryNames[9](0x0D,"ADXL362_REG_FIFO_H            ");
-	registryNames[10](0x0E,"ADXL362_REG_XDATA_L           ");
-	registryNames[11](0x0F,"ADXL362_REG_XDATA_H           ");
-	registryNames[12](0x10,"ADXL362_REG_YDATA_L           ");
-	registryNames[13](0x11,"ADXL362_REG_YDATA_H           ");
-	registryNames[14](0x12,"ADXL362_REG_ZDATA_L           ");
-	registryNames[15](0x13,"ADXL362_REG_ZDATA_H           ");
-	registryNames[16](0x14,"ADXL362_REG_TEMP_L            ");
-	registryNames[17](0x15,"ADXL362_REG_TEMP_H            ");
-	registryNames[18](0x1F,"ADXL362_REG_SOFT_RESET        ");
-	registryNames[19](0x20,"ADXL362_REG_THRESH_ACT_L      ");
-	registryNames[20](0x21,"ADXL362_REG_THRESH_ACT_H      ");
-	registryNames[21](0x22,"ADXL362_REG_TIME_ACT          ");
-	registryNames[22](0x23,"ADXL362_REG_THRESH_INACT_L    ");
-	registryNames[23](0x24,"ADXL362_REG_THRESH_INACT_H    ");
-	registryNames[24](0x25,"ADXL362_REG_TIME_INACT_L      ");
-	registryNames[25](0x26,"ADXL362_REG_TIME_INACT_H      ");
-	registryNames[26](0x27,"ADXL362_REG_ACT_INACT_CTL     ");
-	registryNames[27](0x28,"ADXL362_REG_FIFO_CTL          ");
-	registryNames[28](0x29,"ADXL362_REG_FIFO_SAMPLES      ");
-	registryNames[29](0x2A,"ADXL362_REG_INTMAP1           ");
-	registryNames[30](0x2B,"ADXL362_REG_INTMAP2           ");
-	registryNames[31](0x2C,"ADXL362_REG_FILTER_CTL        ");
-	registryNames[32](0x2D,"ADXL362_REG_POWER_CTL         ");
-	registryNames[33](0x2E,"ADXL362_REG_SELF_TEST         ");
-
-	for (int i = 0;i < NR_OF_REGISTERS ;i++) {
-		if (!avoidIntteruptAcknowledgement || i != 7) {
-			Serial.print(registryNames[i].getHash(),HEX);
-			Serial.print(" ");
-			Serial.print(registryNames[i].getValue());
-			Serial.print(" = ");
-			Serial.println(getReg((byte)registryNames[i].getHash()),printBinary ? BIN : HEX);
-		}
-	}
-}
-#else
-void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
-	Serial.println(F("\r\nto print all registers please install: https://playground.arduino.cc/Code/HashMap/ and uncomment #define ADXL362_HASHMAPLIBINSTALLED\r\n"));
-}
-#endif
-#else
-void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
-}
-#endif
 
 short ADXL362::checkDevice()
 {
@@ -651,9 +544,9 @@ bool ADXL362::selfTest() {
 }
 
 
-/******************************************************************************/
+
 /************************ Measurement Functions *********************************/
-/******************************************************************************/
+
 
 //clears data ready interrupt
 MeasurementInMg ADXL362::getXYZLowPower(measurementRange range) {
@@ -683,9 +576,9 @@ float ADXL362::getTemperature() {
 	return rawToTemp(getReg16(ADXL362_REG_TEMP_L));
 }
 
-/******************************************************************************/
+
 /************************ FIFO Functions *********************************/
-/******************************************************************************/
+
 
 short ADXL362::setFIFOMode(fifoMode mode, uint16_t maxSamplesEVEN, bool storeTemp) {
 	if (maxSamplesEVEN > ADXL362_FIFO_MAX_SAMPLES)
@@ -754,6 +647,7 @@ uint16_t ADXL362::readFIFO(uint16_t* dst, uint16_t lenwanted) {
     getRegBurst16(0, dst, len, ADXL362_READ_FIFO);
     return len; //return nr of entries read
 }
+
 /*
 When reading data, the least significant byte (Bits[B7:B0]) is read first,
 		followed by the most significant byte (Bits[B15:B8]).
@@ -830,9 +724,9 @@ FifoMeasurement ADXL362::parseFIFOMeasurement(measurementRange range, uint16_t* 
 	return measurement;
 }
 
-/******************************************************************************/
+
 /************************ Helper/Protected Functions **************************/
-/******************************************************************************/
+
 
 //other ways to change sampling rate, configure activity/inactivity times will be calculated wrong when used
 short ADXL362::configureAccelerometerInt2SampleTrigger() {
@@ -861,24 +755,6 @@ short ADXL362::configureINT2(status onStatus, bool activeLow) {
  */
 short ADXL362::setPowerMode(powerMode mode) {
 	short status = 1;
-
-	/* done by configurewakeupmode now
-	//first set link loop mode, before activating settings with power control
-	switch (mode) {
-	case ad_power_sleep_link:
-	case ad_power_sleep_link_auto:
-		status = onOrOff(ADXL362_REG_ACT_INACT_CTL,ad_sleep_link, AD_LINKLOOP_OFF);
-		break;
-	case ad_power_sleep_loop:
-	case ad_power_sleep_loop_auto:
-		status = onOrOff(ADXL362_REG_ACT_INACT_CTL,ad_power_sleep_loop, AD_LINKLOOP_OFF);
-		break;
-	default: //in all other modes link/loop is default=off
-		status = onOrOff(ADXL362_REG_ACT_INACT_CTL,ad_sleep, AD_LINKLOOP_OFF);
-	}
-
-
-	if (status <= 0) return status;*/
 
 	status = on(ADXL362_REG_POWER_CTL,mode,AD_POWER_OFF);
 
@@ -936,19 +812,6 @@ int32_t ADXL362::calculateTimeThreshold(uint32_t timeInMS, bandwidth bandwidthIn
 
 	//uint32 is to make sure the multiplication result of odr*timeInMs is not clipped, not sure where its needed and not
 	int32_t threshold = (int32_t)(((float)timeInMS * odr)/1000.0)*(1.0+ADXL362_TIMECORRECTION_INPERCENT/100.0); //max 5242.000
-
-	/*
-	Serial.println("\r\ntime tresh calc");
-	Serial.print("time in ms: ");
-	Serial.println(timeInMS);
-	Serial.print("odr: ");
-	Serial.println(odr);
-	Serial.print("treshold dec: ");
-	Serial.println(threshold);
-	Serial.print("treshold hex: ");
-	Serial.println(threshold,HEX);
-	Serial.println(MAX_8BIT,DEC);
-	Serial.println(forInactive); */
 
 
 	//datasheet: To minimize false positive motion triggers, set the TIME_ACT register greater than 1.
@@ -1020,16 +883,16 @@ uint16_t ADXL362::rangeToCodesPerG(measurementRange range) {
 	case ad_range_8G:
 		return ADXL362_8G_THRESHOLD_LSBPERG; //max 8,7
 		break;
+	default:
+		return ADXL362_2G_THRESHOLD_LSBPERG; //should not get here
 	}
-	return -1;
 }
 
-/*****
-/******************************************************************************/
-/************************ Communication Functions *********************************/
-/******************************************************************************/
 
-/********************** switch = multi bit ********************************/
+/************************ Communication Functions *********************************/
+
+
+/**********************   multi bit ********************************/
 
 short ADXL362::on2(byte reg, byte onbitmask1, byte resetbitmask1,  byte onbitmask2, byte resetbitmask2) {
 	return setReg(reg,
@@ -1048,7 +911,7 @@ short ADXL362::on(byte reg, byte onbitmask, byte resetbitmask) {
 	return setReg(reg, (getReg(reg) & ~resetbitmask) | onbitmask);
 }
 
-/***************************** 1 BIT FUNCTIONS ****************************/
+/***************************** 1 bit  ****************************/
 
 //sets all the bits in offbitmask to 0, then turns the onbitmask back on (exclusiveOn)
 short ADXL362::on(byte reg, byte onbitmask) {
@@ -1254,3 +1117,68 @@ void ADXL362::spiEndTransaction() {
 
     _spi->endTransaction();
 }
+
+
+#ifdef ADXL362_DEBUG
+#ifdef ADXL362_HASHMAPLIBINSTALLED
+#include <HashMap.h>
+void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
+	#define NR_OF_REGISTERS 34
+
+	HashType<int,char*> regnameraw[NR_OF_REGISTERS];
+	HashMap<int,char*> registryNames = HashMap<int,char*>( regnameraw , NR_OF_REGISTERS );
+
+	registryNames[0](0x00,"ADXL362_REG_DEVID_AD          ");
+	registryNames[1](0x01,"ADXL362_REG_DEVID_MST         ");
+	registryNames[2](0x02,"ADXL362_REG_PARTID            ");
+	registryNames[3](0x03,"ADXL362_REG_REVID             ");
+	registryNames[4](0x08,"ADXL362_REG_XDATA             ");
+	registryNames[5](0x09,"ADXL362_REG_YDATA             ");
+	registryNames[6](0x0A,"ADXL362_REG_ZDATA             ");
+	registryNames[7](0x0B,"ADXL362_REG_STATUS            ");
+	registryNames[8](0x0C,"ADXL362_REG_FIFO_L            ");
+	registryNames[9](0x0D,"ADXL362_REG_FIFO_H            ");
+	registryNames[10](0x0E,"ADXL362_REG_XDATA_L           ");
+	registryNames[11](0x0F,"ADXL362_REG_XDATA_H           ");
+	registryNames[12](0x10,"ADXL362_REG_YDATA_L           ");
+	registryNames[13](0x11,"ADXL362_REG_YDATA_H           ");
+	registryNames[14](0x12,"ADXL362_REG_ZDATA_L           ");
+	registryNames[15](0x13,"ADXL362_REG_ZDATA_H           ");
+	registryNames[16](0x14,"ADXL362_REG_TEMP_L            ");
+	registryNames[17](0x15,"ADXL362_REG_TEMP_H            ");
+	registryNames[18](0x1F,"ADXL362_REG_SOFT_RESET        ");
+	registryNames[19](0x20,"ADXL362_REG_THRESH_ACT_L      ");
+	registryNames[20](0x21,"ADXL362_REG_THRESH_ACT_H      ");
+	registryNames[21](0x22,"ADXL362_REG_TIME_ACT          ");
+	registryNames[22](0x23,"ADXL362_REG_THRESH_INACT_L    ");
+	registryNames[23](0x24,"ADXL362_REG_THRESH_INACT_H    ");
+	registryNames[24](0x25,"ADXL362_REG_TIME_INACT_L      ");
+	registryNames[25](0x26,"ADXL362_REG_TIME_INACT_H      ");
+	registryNames[26](0x27,"ADXL362_REG_ACT_INACT_CTL     ");
+	registryNames[27](0x28,"ADXL362_REG_FIFO_CTL          ");
+	registryNames[28](0x29,"ADXL362_REG_FIFO_SAMPLES      ");
+	registryNames[29](0x2A,"ADXL362_REG_INTMAP1           ");
+	registryNames[30](0x2B,"ADXL362_REG_INTMAP2           ");
+	registryNames[31](0x2C,"ADXL362_REG_FILTER_CTL        ");
+	registryNames[32](0x2D,"ADXL362_REG_POWER_CTL         ");
+	registryNames[33](0x2E,"ADXL362_REG_SELF_TEST         ");
+
+	for (int i = 0;i < NR_OF_REGISTERS ;i++) {
+		if (!avoidIntteruptAcknowledgement || i != 7) {
+			Serial.print(registryNames[i].getHash(),HEX);
+			Serial.print(" ");
+			Serial.print(registryNames[i].getValue());
+			Serial.print(" = ");
+			Serial.println(getReg((byte)registryNames[i].getHash()),printBinary ? BIN : HEX);
+		}
+	}
+}
+#else
+void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
+	Serial.println(F("\r\nto print all registers please install: https://playground.arduino.cc/Code/HashMap/ and uncomment #define ADXL362_HASHMAPLIBINSTALLED\r\n"));
+}
+#endif
+#else
+void ADXL362::printRegisters(bool avoidIntteruptAcknowledgement, bool printBinary) {
+}
+#endif

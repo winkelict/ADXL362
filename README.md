@@ -1,8 +1,10 @@
 Winkel ICT ADXL362
 ==================
 Library for ADXL362 accelerometer: unique because of it's 
-- ultralow (lowest of +/- 120 reviewed datasheets) power (0,270ua) usage
+- ultralow (lowest of +/- 120 reviewed datasheets) power (0,270uA) usage
 - autonomous motion switch functionality. 
+
+Together allowing for extremely long battery life.
 
 Thoroughly tested low memory footprint library, complete implementation of datasheet / functionality.
 Focus on ease of use and easy debugging (every error has a unique negative status code returned by most functions)
@@ -12,10 +14,15 @@ Focus on ease of use and easy debugging (every error has a unique negative statu
 - SparkFun Wake on Shake (SEN-11447) - https://www.sparkfun.com/products/11447
 - Breakout boards also available available on Ebay at a much lower price! 
 
+TODO:
+- voltage regulators STLQ20/15 and LifePo4 batteries
+  (lowest power usage on low (2.0V) voltage.
+  
 ## Quick start
 Important deviations from datasheet terminology:
 - link/loop is called sequential (see configureSequential)
-- wakeup mode is implemented as just a bandwith / odr mode: 
+- wakeup mode (0,270 uA) is implemented as just a bandwith / odr mode: 
+
 
 	ad_bandwidth_hz_6_wakeup_ultralowpower
 
@@ -56,12 +63,16 @@ This setting will cause all written registry values to be read back and checked 
 	#define ADXL362_VERIFY_REG_READBACK
 
 ### Measuring XYZ/Temp
+See example ino file: 
 
 ### Motion Switch
+See example ino file:
 
 ### Freefall detection
+See example ino file:
 
 ### Custom detection
+See example ino file:
 
 ### Misc settings (ADXL362.h)
 Enable build in hamming error detection
@@ -84,7 +95,8 @@ My measurements identified some corrections to the wakeupmode ODR and the time t
 
 ## Goals / Philosophy
 - Functions / parameters should not allow options/combinations that the accelerometer cannot execute
-- Inuitive usage of all code, functions, parameters
+- As many default values for parameters as possible, in order from most to least used (estimated) allowing for quick implementation for most use cases while still enabling all functionality.
+- Intuitive usage of all code, functions, parameters
   - when not in conflict with first rule, use datasheet terminology
 - All functions return a unique negative status (if possible) value when an error occured, and exit the function immediately after that
   - this makes it easy to look for which problem occured and fix it
