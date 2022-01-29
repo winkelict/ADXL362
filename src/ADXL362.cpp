@@ -223,21 +223,6 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	xyzafter.y = y/SELF_TEST_NROFSAMPLES;
 	xyzafter.z = z/SELF_TEST_NROFSAMPLES;
 
-	Serial.print("X: ");
-	Serial.println(xyzbefore.x);
-	Serial.print("Y: ");
-	Serial.println(xyzbefore.y);
-	Serial.print("Z: ");
-	Serial.println(xyzbefore.z);
-
-	Serial.print("X: ");
-	Serial.println(xyzafter.x);
-	Serial.print("Y: ");
-	Serial.println(xyzafter.y);
-	Serial.print("Z: ");
-	Serial.println(xyzafter.z);
-
-
 
 	xyzafter.x = xyzafter.x-xyzbefore.x;
 	xyzafter.y = xyzafter.y-xyzbefore.y;
