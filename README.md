@@ -51,6 +51,10 @@ My (test) setup:
 - LiPo battery
 - STLQ020C22R (2.2volt), capacitors: Vin: 1uF ceramic / Vout: 1uf ceramic + 10uF tantalum 
 
+## Guide
+1. [ Quick start. ](#quickstart)
+
+<a name="quickstart"></a>
 ## Quick start
 Important deviations from datasheet terminology:
 - link/loop is called sequential (see configureSequential)
