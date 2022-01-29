@@ -52,7 +52,19 @@ My (test) setup:
 - STLQ020C22R (2.2volt), capacitors: Vin: 1uF ceramic / Vout: 1uf ceramic + 10uF tantalum 
 
 ## Guide
-1. [ Quick start. ](#quickstart)
+* [ Quick start. ](#quickstart)
+* [ Debugging settings. ](#debug)
+* [ Measuring XYZ/Temp. ](#measurexyz)
+* [ Motion Switch. ](#motionswitch)
+* [ Freefall detection. ](#freefall)
+* [ Custom detection. ](#custom)
+* [ Advanced detection. ](#advanced)
+* [ FIFO: oldestsaved and streaming mode (normal measuring). ](#fifo)
+* [ FIFO: triggered mode (use with movement detection). ](#fifotriggered)
+* [ Self-test. ](#selftest)
+* [ Misc settings. ](#misc)
+* [ Goals / Philosophy. ](#goals)
+* [ TODO. ](#todo)
 
 <a name="quickstart"></a>
 ## Quick start
@@ -80,6 +92,7 @@ Or for working with interrupts:
 - isInactInterrupt
 - isAwake
 
+<a name="debug"></a>
 ### Debugging settings (ADXL362.h)
 Uncomment to disable debugging, default=debug enabled
 
@@ -99,6 +112,7 @@ This setting will cause all written registry values to be read back and checked 
 
 	#define ADXL362_VERIFY_REG_READBACK
 
+<a name="measurexyz"></a>
 ### Measuring XYZ/Temp
 See example ino file: **BasicMeassure**
 
@@ -134,6 +148,7 @@ This way you do not end up in a debugging nightmare.
 
 The cause of the error can be identified by looking up the negative status code in the source code (ADXL362.cpp)
 
+<a name="motionswitch"></a>
 ### Motion Switch
 See example ino file: **AutonomousMotionSwitch**
 
@@ -172,6 +187,7 @@ The following 2 settings are linkMode and autoSleep: acc.activateAutonomousMotio
 
 The bandwidth setting is the last one, this can be used together with autoSleep to set the bandwidth to the accuracy you need when the ADXL362 is active (awake = 1).
 
+<a name="freefall"></a>
 ### Freefall detection
 See example ino file: **FreeFall**
 
@@ -188,7 +204,7 @@ For example, freefall detection in wake up mode:
 
 	acceleroMeter.activateFreeFallDetection(600,30,ad_bandwidth_hz_6_wakeup_ultralowpower);
 	
-
+<a name="custom"></a>
 ### Custom detection
 See example ino file: **AdvancedDetection**
 
@@ -213,6 +229,7 @@ Some parameter combinations might result in a negative status code as the chip c
 
 This function should cover most use-cases, when more specific interrupt configuration is needed, see the next chapter:
 
+<a name="advanced"></a>
 ### Advanced detection
 Use the library this way only if:
 - You need different active low/high configuration for each interrupt
@@ -257,6 +274,7 @@ When using the [EXTERNAL..] parameters pass NULL for status.
 
 activateMode always has to be called to activate your configuration (uses POWER_CTL register).
 
+<a name="fifo"></a>
 ### FIFO: oldestsaved and streaming mode (normal measuring)
 See example ino file: **FIFO**
 
@@ -305,6 +323,7 @@ The FIFO buffer can be read like this:
 
 The entriesptr and buflen sizes will be changed by the parse function each iteration.
 
+<a name="fifotriggered"></a>
 ### FIFO: triggered mode (use with movement detection)
 See example ino file: **AutonomousMotionSwitchFIFO**
 
@@ -317,6 +336,7 @@ When an interrupt occured the FIFO will contain a maximum of FIFO_SIZE of measur
 
 *See previous chapter for explanation of macro definitions and how to read the FIFO buffer*
 
+<a name="selftest"></a>
 ### Self-test
 
 Execute SelfTest.ino in the example files.
@@ -327,7 +347,7 @@ The self-test will average both before self-test and self-test x,y,z values over
 
 See datasheet page 41 / Table 22 to interpret results: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl362.pdf
 
-
+<a name="misc"></a>
 ### Misc settings (ADXL362.h)
 Enable build in hamming error detection
 
@@ -348,6 +368,7 @@ These might have to be adjusted for your specific chip.
 
 	#define ADXL362_TIMECORRECTION_INPERCENT -10
 
+<a name="goals"></a>
 ## Goals / Philosophy
 - Functions / parameters should not allow options/combinations that the accelerometer cannot execute
 - As many default values for parameters as possible, in order from most to least used (estimated) allowing for quick implementation for most use cases while still enabling all functionality.
@@ -359,6 +380,7 @@ These might have to be adjusted for your specific chip.
 - as little RAM usage as possible (+-5 bytes)
 - as little flash usage as possible (1162 measuring only, 2714 bytes for autonomous motion switch)
 
+<a name="todo"></a>
 ## TODO's
 - test external clock / sample trigger parameters of activity and inactivity functions
 - test setting ADXL362_POWERSAVE_SKIPWRITE_MSB
