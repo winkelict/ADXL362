@@ -188,7 +188,7 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	uint32_t z = 0;
 
 	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
-		MeasurementInMg xyz = getXYZ(ad_range_2G);
+		MeasurementInMg xyz = getXYZ(ad_range_8G);
 		x = x + xyz.x;
 		y = y + xyz.y;
 		z = z + xyz.z;
@@ -209,7 +209,7 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	delay(SELF_TEST_SETTLETIME_INMS);
 
 	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
-		MeasurementInMg xyz = getXYZ(ad_range_2G);
+		MeasurementInMg xyz = getXYZ(ad_range_8G);
 		x = x + xyz.x;
 		y = y + xyz.y;
 		z = z + xyz.z;
@@ -222,6 +222,22 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	xyzafter.x = x/SELF_TEST_NROFSAMPLES;
 	xyzafter.y = y/SELF_TEST_NROFSAMPLES;
 	xyzafter.z = z/SELF_TEST_NROFSAMPLES;
+
+	Serial.print("X: ");
+	Serial.println(xyzbefore.x);
+	Serial.print("Y: ");
+	Serial.println(xyzbefore.y);
+	Serial.print("Z: ");
+	Serial.println(xyzbefore.z);
+
+	Serial.print("X: ");
+	Serial.println(xyzafter.x);
+	Serial.print("Y: ");
+	Serial.println(xyzafter.y);
+	Serial.print("Z: ");
+	Serial.println(xyzafter.z);
+
+
 
 	xyzafter.x = xyzafter.x-xyzbefore.x;
 	xyzafter.y = xyzafter.y-xyzbefore.y;
@@ -923,9 +939,9 @@ MeasurementInMg ADXL362::rawToMeasurement(measurementRange range, uint16_t xraw,
 
 	uint16_t codesperg = rangeToCodesPerG(range);
 
-	m.x = (int16_t)((float)xraw / (codesperg / 1000.0));
-	m.y = (int16_t)((float)yraw / (codesperg / 1000.0));
-	m.z = (int16_t)((float)zraw / (codesperg / 1000.0));
+	m.x = (int16_t)((float)(int16_t)xraw / (codesperg / 1000.0));
+	m.y = (int16_t)((float)(int16_t)yraw / (codesperg / 1000.0));
+	m.z = (int16_t)((float)(int16_t)zraw / (codesperg / 1000.0));
 
 	return m;
 }
@@ -933,7 +949,7 @@ MeasurementInMg ADXL362::rawToMeasurement(measurementRange range, uint16_t xraw,
 int16_t ADXL362::rawToMeasurement(measurementRange range, uint16_t raw) {
 	uint16_t codesperg = rangeToCodesPerG(range);
 
-	return (int16_t)((float)raw / (codesperg / 1000.0));
+	return (int16_t)((float)(int16_t)raw / (codesperg / 1000.0));
 }
 
 float ADXL362::rawToTemp(uint16_t rawTemp) {
