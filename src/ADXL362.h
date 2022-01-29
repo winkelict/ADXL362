@@ -175,9 +175,9 @@ typedef enum {
 	ad_status_awake 		= ADXL362_STATUS_AWAKE, //example : motion switch, bit 7 is for other purposes
 	ad_status_inactive 		= ADXL362_STATUS_INACT, //example: freefall
 	ad_status_active 		= ADXL362_STATUS_ACT,
-	ad_status_fifo_overrun 	= ADXL362_STATUS_FIFO_OVERRUN,
-	ad_status_fifo_watermark = ADXL362_STATUS_FIFO_WATERMARK,
-	ad_status_fifo_ready 	= ADXL362_STATUS_FIFO_RDY,
+	ad_status_fifo_overrun 	= ADXL362_STATUS_FIFO_OVERRUN, //FIFO buffer full
+	ad_status_fifo_watermark = ADXL362_STATUS_FIFO_WATERMARK, //more samples in FIFO then in set in samples register
+	ad_status_fifo_ready 	= ADXL362_STATUS_FIFO_RDY, //at least 1 sample in FIFO buffer
 	ad_status_data_ready 	=ADXL362_STATUS_DATA_RDY //set with 10us delay after read-regs are set
 } status;
 #define AD_STATUS_OFF B0111111 //not really needed here as none has value 0
@@ -218,12 +218,13 @@ typedef enum {
 
 struct FifoEntry {
 	int16_t value;
+	float floatValue;
 	fifoEntryType type;
 };
 
 struct FifoMeasurement {
 	MeasurementInMg forceInMg;
-	int16_t tempInC;
+	float tempInC;
 	bool complete;
 };
 
@@ -332,13 +333,15 @@ public:
     MeasurementInMg getXYZ(measurementRange range);
     float getTemperature();
 
-    //TODO: all these functions remain untested
     //FIFO functions
-    short setFIFOMode(fifoMode mode, uint16_t maxSamplesEVEN, bool storeTemp);
+    short configureFIFO(fifoMode mode, uint16_t maxSamplesEVEN = ADXL362_FIFO_MAX_SAMPLES, bool storeTemp = true);
+
+    short configureFIFOInterrupt1(status int1FIFOstatus);
+    short configureFIFOInterrupt2(status int2FIFOstatus);
     uint16_t getNrOf16bitFIFOEntries();
-    uint16_t readFIFO(uint16_t* dst, uint16_t lenwanted);
+    uint16_t readFIFO(uint16_t* dst, uint16_t lenwanted = ADXL362_FIFO_MAX_SAMPLES);
     FifoEntry parseFIFOEntry(measurementRange range, uint16_t rawentry);
-    FifoMeasurement parseFIFOMeasurement(measurementRange range, uint16_t* buffer, uint16_t bufferlen);
+    FifoMeasurement parseFIFOMeasurement(measurementRange range, uint16_t** bufferptr, uint16_t* bufferlen, bool tempEnabled = true);
 
 protected:
     //ATTENTION: these functions do not enforce the right combination of modes and settings, use at your own risk

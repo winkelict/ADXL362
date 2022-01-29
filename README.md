@@ -24,6 +24,8 @@ Or use it as an autonomous motion switch with zero configuration (settings of ex
 	acceleroMeter.activateAutonomousMotionSwitch();
 
 RAM usage: 5 bytes, flash usage: 2714 bytes (measured on Pro Mini 3.3V) / debug mode off
+
+UPDATE 29/Jan/22: all FIFO modes fully tested and working, see v1.2.0
 	 
 ## Hardware
 - ADXL362 datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl362.pdf
@@ -251,6 +253,66 @@ When using the [EXTERNAL..] parameters pass NULL for status.
 
 activateMode always has to be called to activate your configuration (uses POWER_CTL register).
 
+### FIFO: oldestsaved and streaming mode (normal measuring)
+See example ino file: **FIFO**
+
+The FIFO functionality can be used in combination with all other active[] and configure[] functions.
+FIFO has its own functions to configure interrupts, do not configure an interrupt twice using the other interrupt functions.
+
+Configure the FIFO as follows:
+
+
+	accelerometer.configureFIFO(ad_fifo_oldestsaved,FIFO_SIZE, FIFO_TEMP_ENABLED);
+
+ad_fifo_oldestsaved here means that no new data will be written to the FIFO when it's full, a full FIFO will trigger a FIFO overrun status. Configuration for this has been included in the example ino file:
+
+
+	accelerometer.configureFIFOInterrupt2(ad_status_fifo_overrun);
+	
+Also configure the watermark interrupt (see FIFO_SIZE):
+
+
+	accelerometer.configureFIFOInterrupt1(ad_status_fifo_watermark);
+	
+ad_fifo_stream can also be used instead of ad_fifo_oldest saved, no overrun interrupt will occur as data in FIFO is always replaced with newest data.
+
+The simplest way to use the FIFO buffer is in normal measurement mode, call this after the previous FIFO configuration to start measuring using FIFO:
+
+
+	accelerometer.activateMeasure();
+
+It is good to use macro definitions as in the example above:
+- FIFO_SIZE: maximum size before a watermark interrupt is occured, this can in turn also be used to define a buffer with the right size to read the FIFO data into.
+- FIFO_TEMP_ENABLED: when reading the FIFO data these functions need to know if temperature has been stored:
+
+The FIFO buffer can be read like this:
+
+
+    uint16_t fifoEntries[FIFO_SIZE];
+    uint16_t nrOfEntries = accelerometer.readFIFO(fifoEntries,FIFO_SIZE);
+    uint16_t* entriesptr = fifoEntries;
+    uint16_t buflen = nrOfEntries;
+    while (buflen > 0) {
+      FifoMeasurement m = accelerometer.parseFIFOMeasurement(ad_range_2G, &entriesptr, &buflen, FIFO_TEMP_ENABLED);
+      MeasurementInMg mxyz = m.forceInMg;
+      float tepm = m.tempInC;
+      //do something with the measurement
+    }
+
+The entriesptr and buflen sizes will be changed by the parse function each iteration.
+
+### FIFO: triggered mode (use with movement detection)
+See example ino file: **AutonomousMotionSwitchFIFO**
+
+Similarly as the normal/measurement FIFO configuration, the FIFO buffer can also be used to capture data surrounding, for example, an awake interrupt:
+Before using one of the activate[] functions first configure the FIFO in triggered mode:
+
+	acc.configureFIFO(ad_fifo_trigger,FIFO_SIZE, FIFO_TEMP_ENABLED);
+
+When an interrupt occured the FIFO will contain a maximum of FIFO_SIZE of measurements surrounding the event.
+
+*See previous chapter for explanation of macro definitions and how to read the FIFO buffer*
+
 ### Misc settings (ADXL362.h)
 Enable build in hamming error detection
 
@@ -283,7 +345,6 @@ These might have to be adjusted for your specific chip.
 - as little flash usage as possible (1162 measuring only, 2714 bytes for autonomous motion switch)
 
 ## TODO's
-- test FIFO functionality
 - test external clock / sample trigger parameters of activity and inactivity functions
 - implement self-test
 - test setting

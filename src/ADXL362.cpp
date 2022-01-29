@@ -576,9 +576,14 @@ float ADXL362::getTemperature() {
 /************************ FIFO Functions *********************************/
 
 
-short ADXL362::setFIFOMode(fifoMode mode, uint16_t maxSamplesEVEN, bool storeTemp) {
-	if (maxSamplesEVEN > ADXL362_FIFO_MAX_SAMPLES)
+short ADXL362::configureFIFO(fifoMode mode, uint16_t maxSamplesEVEN, bool storeTemp) {
+	#ifdef ADXL362_DEBUG
+	if (maxSamplesEVEN == 0 | maxSamplesEVEN > ADXL362_FIFO_MAX_SAMPLES)
 		return -240;
+
+	if(maxSamplesEVEN % 2 != 0)
+		return -241;
+	#endif
 
 	short status;
 
@@ -598,6 +603,23 @@ short ADXL362::setFIFOMode(fifoMode mode, uint16_t maxSamplesEVEN, bool storeTem
 	return status;
 }
 
+short ADXL362::configureFIFOInterrupt1(status int1FIFOstatus) {
+	#ifdef ADXL362_DEBUG
+	if (int1FIFOstatus != ad_status_fifo_overrun && int1FIFOstatus != ad_status_fifo_watermark && int1FIFOstatus != ad_status_fifo_ready) {
+		return -242;
+	}
+	#endif
+	return configureINT1(int1FIFOstatus);
+}
+
+short ADXL362::configureFIFOInterrupt2(status int2FIFOstatus) {
+	#ifdef ADXL362_DEBUG
+	if (int2FIFOstatus != ad_status_fifo_overrun && int2FIFOstatus != ad_status_fifo_watermark && int2FIFOstatus != ad_status_fifo_ready) {
+		return -243;
+	}
+	#endif
+	return configureINT2(int2FIFOstatus);
+}
 
 //max 511 / default ox80 to avoid triggering watermark interrupt
 uint16_t ADXL362::getNrOf16bitFIFOEntries() {
@@ -629,12 +651,11 @@ Bits[B11:B0] represent the 12-bit, twos complement acceleration or temperature d
 //Reading enough data from the FIFO buffer so that interrupt conditions are no longer met clears the FIFO ready, FIFO watermark, and FIFO overrun interrupts.
 //clears FIFO watermark, and FIFO overrun interrupts. (reads all)
 uint16_t ADXL362::readFIFO(uint16_t* dst, uint16_t lenwanted) {
-    //TODO: is this right?
     uint16_t lenmax = getNrOf16bitFIFOEntries();
     uint16_t len;
 
     if (lenwanted > 0)
-    	len = len > lenmax ? lenmax : len;
+    	len = (lenwanted > lenmax ? lenmax : lenwanted);
     else
     	len = lenmax;
 
@@ -668,16 +689,17 @@ FifoEntry ADXL362::parseFIFOEntry(measurementRange range, uint16_t rawentry) {
 	if (fifoEntry.type != ad_fifo_TEMP_C)
 		fifoEntry.value = rawToMeasurement(range, rawvalue);
 	else
-		fifoEntry.value = rawToTemp(rawvalue);
+		fifoEntry.floatValue = rawToTemp(rawvalue);
 
 	return fifoEntry;
 }
 
 //Intented usage: call in a loop, adding +4 to buffer pointer (buffer param) each time and setting remaining length (16bit = 1) in bufferlen until bufferen <= 0
-//TODO: can be done faster by skipping parsing to fifoentry
-FifoMeasurement ADXL362::parseFIFOMeasurement(measurementRange range, uint16_t* buffer, uint16_t bufferlen) {
+//TODO: can be done faster by skipping parsing to fifoentry + assuming x,y,z, temp order (guaranteed, see datasheet)
+FifoMeasurement ADXL362::parseFIFOMeasurement(measurementRange range, uint16_t** bufferptr, uint16_t* bufferlen, bool tempEnabled) {
 	FifoMeasurement measurement;
-	byte nrOfEntries = 4;
+	//byte entrylength = tempEnabled ? 4 : 3;
+	byte nrOfEntries = tempEnabled ? 4 : 3;
 	byte entriesParsed=0;
 
 	measurement.forceInMg.x = 0;
@@ -685,8 +707,10 @@ FifoMeasurement ADXL362::parseFIFOMeasurement(measurementRange range, uint16_t* 
 	measurement.forceInMg.z = 0;
 	measurement.tempInC = 0;
 
-	if (bufferlen < 4)
-		nrOfEntries = bufferlen;
+	if (*bufferlen < nrOfEntries)
+		nrOfEntries = *bufferlen;
+
+	uint16_t* buffer = *bufferptr;
 
 	//written in order, but depends on start of buffer
 	for (byte i = 0; i < nrOfEntries; i++) {
@@ -706,13 +730,16 @@ FifoMeasurement ADXL362::parseFIFOMeasurement(measurementRange range, uint16_t* 
 			entriesParsed++;
 			break;
 		case ad_fifo_TEMP_C:
-			measurement.tempInC = fifoentry.value;
+			measurement.tempInC = fifoentry.floatValue;
 			entriesParsed++;
 			break;
 		}
 	}
 
-	if (entriesParsed == 4)
+	*bufferlen = *bufferlen - nrOfEntries;
+	*bufferptr = *bufferptr + nrOfEntries;
+
+	if (entriesParsed == nrOfEntries)
 		measurement.complete= true;
 	else
 		measurement.complete= false;
