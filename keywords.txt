@@ -7,8 +7,6 @@
 #######################################
 ADXL362	KEYWORD1
 public	KEYWORD1
-protected	KEYWORD1
-
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -18,15 +16,24 @@ activateMeasure	KEYWORD2
 activateAutonomousMotionSwitch	KEYWORD2
 activateFreeFallDetection	KEYWORD2
 activateCustomDetection	KEYWORD2
+executeSelfTest	KEYWORD2
 configureSequantial	KEYWORD2
+isAwake	KEYWORD2
 configure	KEYWORD2
+configureInterrupt1	KEYWORD2
+configureInterrupt2	KEYWORD2
+configureActivity	KEYWORD2
+configureInActivity	KEYWORD2
+configureActivityWakeupMode	KEYWORD2
+isInactInterrupt	KEYWORD2
+isActInterrupt	KEYWORD2
+activateMode	KEYWORD2
 printRegisters	KEYWORD2
 checkDevice	KEYWORD2
 getRevisionId	KEYWORD2
 softReset	KEYWORD2
 hasStatus	KEYWORD2
 activateStandbyMode	KEYWORD2
-selfTest	KEYWORD2
 getXYZLowPower	KEYWORD2
 getXYZ	KEYWORD2
 getTemperature	KEYWORD2
@@ -37,12 +44,6 @@ getNrOf16bitFIFOEntries	KEYWORD2
 readFIFO	KEYWORD2
 parseFIFOEntry	KEYWORD2
 parseFIFOMeasurement	KEYWORD2
-configureINT1	KEYWORD2
-configureINT2	KEYWORD2
-setPowerMode	KEYWORD2
-configureAccelerometerInt2SampleTrigger	KEYWORD2
-configureAccelerometerInt1Clock	KEYWORD2
-
 
 ######################################
 # Constants (LITERAL1)

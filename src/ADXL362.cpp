@@ -179,6 +179,58 @@ short ADXL362::activateCustomDetection(bandwidth bandwidthInHz, sequentialMode s
 	return status;
 }
 
+//TODO: implement
+MeasurementInMg ADXL362::executeSelfTest() {
+	activateMeasure(ad_bandwidth_hz_50_lowpower, ad_range_8G);
+
+	MeasurementInMg xyzbefore;
+	uint32_t x = 0;
+	uint32_t y = 0;
+	uint32_t z = 0;
+
+	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
+		MeasurementInMg xyz = getXYZ(ad_range_2G);
+		x = x + xyz.x;
+		y = y + xyz.y;
+		z = z + xyz.z;
+	}
+
+	xyzbefore.x = x/SELF_TEST_NROFSAMPLES;
+	xyzbefore.y = y/SELF_TEST_NROFSAMPLES;
+	xyzbefore.z = z/SELF_TEST_NROFSAMPLES;
+
+	//self test on
+	on(ADXL362_REG_SELF_TEST,ADXL362_SELF_TEST_ST,ADXL362_SELF_TEST_ST);
+
+	x = 0;
+	y = 0;
+	z = 0;
+
+	//=40ms
+	delay(SELF_TEST_SETTLETIME_INMS);
+
+	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
+		MeasurementInMg xyz = getXYZ(ad_range_2G);
+		x = x + xyz.x;
+		y = y + xyz.y;
+		z = z + xyz.z;
+	}
+
+	//self test off
+	on(ADXL362_REG_SELF_TEST,0x00,ADXL362_SELF_TEST_ST);
+
+	MeasurementInMg xyzafter;
+	xyzafter.x = x/SELF_TEST_NROFSAMPLES;
+	xyzafter.y = y/SELF_TEST_NROFSAMPLES;
+	xyzafter.z = z/SELF_TEST_NROFSAMPLES;
+
+	xyzafter.x = xyzafter.x-xyzbefore.x;
+	xyzafter.y = xyzafter.y-xyzbefore.y;
+	xyzafter.z = xyzafter.z-xyzbefore.z;
+
+	return xyzafter;
+}
+
 
 /************************ Configuration Functions (best executed in this order)******/
 
@@ -533,12 +585,6 @@ short ADXL362::activateStandbyMode() {
 	//readback verification will return -206 or -207
 	return setPowerMode(ad_power_standby);
 }
-
-//TODO: implement
-bool ADXL362::selfTest() {
-	return true;
-}
-
 
 
 /************************ Measurement Functions *********************************/

@@ -102,6 +102,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define SPI_MIN_WRITEABLE_REG ADXL362_REG_SOFT_RESET
 #define SPI_MAX_WRITEABLE_REG ADXL362_REG_SELF_TEST
 
+//officialy should be minimum 4/100*1000 = 40ms
+#define SELF_TEST_SETTLETIME_INMS 1000
+#define SELF_TEST_NROFSAMPLES 16
+
 typedef enum
 {
 	ad_range_2G 	= ADXL362_FILTER_CTL_RANGE(ADXL362_RANGE_2G), //default, most sensitive
@@ -260,6 +264,7 @@ public:
 							, status int1Status = ad_status_active, status int2Status = ad_status_inactive, bool activeLow = false, bool absoluteMode = false
 							, measurementRange measurementRangeInG = ad_range_2G, noiseMode noiseMode = ad_noise_normal);
 
+    MeasurementInMg executeSelfTest();
 
     /**************** SEQUENTIAL MODE: adds functionality to default mode  ***********************/
     //Supports awake bit
@@ -324,9 +329,6 @@ public:
     short softReset(bool verify = true);
     bool hasStatus(status status); //call to clear activity/inactivity interrupts
     short activateStandbyMode(); //to temp disable all measurements and go to 10na power usage
-    //TODO: implement
-    bool selfTest();
-
 
     //Measurement functions
     MeasurementInMg getXYZLowPower(measurementRange range);

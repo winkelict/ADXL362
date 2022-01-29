@@ -313,6 +313,17 @@ When an interrupt occured the FIFO will contain a maximum of FIFO_SIZE of measur
 
 *See previous chapter for explanation of macro definitions and how to read the FIFO buffer*
 
+### Self-test
+
+Execute SelfTest.ino in the example files.
+
+
+The self-test will average both before self-test and self-test x,y,z values over 16 samples and return the **difference** in x,y,z.
+
+
+See datasheet page 41 / Table 22 to interpret results: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl362.pdf
+
+
 ### Misc settings (ADXL362.h)
 Enable build in hamming error detection
 
@@ -346,6 +357,4 @@ These might have to be adjusted for your specific chip.
 
 ## TODO's
 - test external clock / sample trigger parameters of activity and inactivity functions
-- implement self-test
-- test setting
-	ADXL362_POWERSAVE_SKIPWRITE_MSB
+- test setting ADXL362_POWERSAVE_SKIPWRITE_MSB
