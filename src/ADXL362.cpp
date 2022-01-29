@@ -179,7 +179,6 @@ short ADXL362::activateCustomDetection(bandwidth bandwidthInHz, sequentialMode s
 	return status;
 }
 
-//TODO: implement
 MeasurementInMg ADXL362::executeSelfTest() {
 	activateMeasure(ad_bandwidth_hz_50_lowpower, ad_range_8G);
 
