@@ -319,7 +319,7 @@ The FIFO buffer can be read like this:
     while (buflen > 0) {
       FifoMeasurement m = accelerometer.parseFIFOMeasurement(ad_range_2G, &entriesptr, &buflen, FIFO_TEMP_ENABLED);
       MeasurementInMg mxyz = m.forceInMg;
-      float tepm = m.tempInC;
+      float temp = m.tempInC;
       //do something with the measurement
     }
 
