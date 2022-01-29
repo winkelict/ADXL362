@@ -1,6 +1,8 @@
 Winkel ICT ADXL362
 ==================
 
+COMPLETE and fully tested implementation of the ADXL362 datasheet.
+
 Library for ADXL362 accelerometer: unique because of its:
 - ultralow (lowest of +/- 62 reviewed accelerometer datasheets) power (0,270uA) usage
 - autonomous motion switch functionality. 
