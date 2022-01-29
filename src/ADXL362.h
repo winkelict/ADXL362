@@ -232,7 +232,6 @@ class ADXL362
 public:
 	ADXL362(byte slaveSelectPin, SPIClass *spi=&SPI);
 
-public:
     short init();
 
     //most simple configuration for getting xyz, temp and possibly testing/using FIFO
