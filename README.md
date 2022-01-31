@@ -370,7 +370,8 @@ At request can make an SPI stub available which will simulate the accelerometer 
 
 	//#define ADXL362_USE_SPI_STUB
 
-My measurements identified some corrections to the wakeup mode ODR and the time thresholds so that act/inact times passed to the functions will be accurate:
+My measurements identified some corrections to the wakeup mode ODR and the time thresholds so that act/inact times passed to the functions will be accurate.
+The library default's to the following settings which might or might not be accurate:
 
 	#define ADXL362_WAKEUPMODE_ACTUALODR 6.0f
 	
