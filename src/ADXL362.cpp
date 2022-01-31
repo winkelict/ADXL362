@@ -392,7 +392,7 @@ short ADXL362::configureInterrupt1(ADXL362Config config, status intstatus, bool 
 	}
 }
 
-short ADXL362::configureInterrupt2(ADXL362Config config, status intstatus, bool activeLow, bool externalSampleTrigger) {
+short ADXL362::configureInterrupt2(status intstatus, bool activeLow, bool externalSampleTrigger) {
 	short status = 1;
 
 	#ifdef ADXL362_DEBUG
@@ -422,6 +422,9 @@ short ADXL362::configureInterrupt2(ADXL362Config config, status intstatus, bool 
 	}
 }
 
+short ADXL362::disableInterrupt2(status intstatus) {
+	return on(ADXL362_REG_INTMAP2, 0x00, intstatus);
+}
 
 //function just to make clear that wakeup mode does not use time
 //no time threshold in wakeup mode, based automatically on 1 sample

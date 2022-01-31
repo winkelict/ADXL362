@@ -265,6 +265,7 @@ public:
 							, status int1Status = ad_status_active, status int2Status = ad_status_inactive, bool activeLow = false, bool absoluteMode = false
 							, measurementRange measurementRangeInG = ad_range_2G, noiseMode noiseMode = ad_noise_normal);
 
+
     MeasurementInMg executeSelfTest();
 
     //executes time calibration for 100hz low power and wakeup mode (lowest power mode) as each chip differs
@@ -296,7 +297,8 @@ public:
 	/*************** BOTH MODES *************************/
 
     short configureInterrupt1(ADXL362Config config, status intstatus, bool activeLow = false, bool externalClock = false);
-    short configureInterrupt2(ADXL362Config config, status intstatus, bool activeLow = false, bool externalSampleTrigger = false);
+    short configureInterrupt2(status intstatus, bool activeLow = false, bool externalSampleTrigger = false);
+    short disableInterrupt2(status intstatus);
 
 	//absolute mode is to exclude earths gravity, only include when perceived gravity plays a significant role (example: free fall)
 	//if mintimeinssec=0 a minimum sample treshold will be set to minimize false positives
