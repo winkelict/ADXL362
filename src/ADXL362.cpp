@@ -240,7 +240,7 @@ short ADXL362::executeTimeCalibration(bool printResultsWhenDebugMode) {
 	timeTresholdCorrectInPerc = 0;
 	wakeupModeActualOdr = 10;
 
-	//TODO: low power most important, so calibrate on low hz, chip Revision 3 seems to result in to low times in higher 25hz+ bandwiths
+	//TODO: low power most important, so calibrate on low hz, chip Revision 3 seems to result in to low times in higher 25hz+ bandwidths
 	timeinms = measureActualTimeInterval(ad_bandwidth_hz_3_125);
 	if (timeinms < 0) return -180;
 
