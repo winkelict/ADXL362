@@ -262,48 +262,6 @@ short ADXL362::executeTimeCalibration(bool printResultsWhenDebugMode) {
 		Serial.println(F("f"));
 	}
 	#endif
-	/*
-	//fault can also be in precision of my time calc function??
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_wakeup_ultralowpower);
-	Serial.println("ad_bandwidth_hz_6_wakeup_ultralowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_3_125);
-	Serial.println("ad_bandwidth_hz_3_125");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_25_lowpower);
-	Serial.println("ad_bandwidth_hz_6_25_lowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_25);
-	Serial.println("ad_bandwidth_hz_6_25");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_12_5_lowpower);
-	Serial.println("ad_bandwidth_hz_12_5_lowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_12_5);
-	Serial.println("ad_bandwidth_hz_12_5");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_25_lowpower);
-	Serial.println("ad_bandwidth_hz_25_lowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_25);
-	Serial.println("ad_bandwidth_hz_25");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_50_lowpower);
-	Serial.println("ad_bandwidth_hz_50_lowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_50);
-	Serial.println("ad_bandwidth_hz_50");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_100_lowpower);
-	Serial.println("ad_bandwidth_hz_100_lowpower");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_100);
-	Serial.println("ad_bandwidth_hz_100");
-	Serial.println(timeinms);
-	timeinms = measureActualTimeInterval(ad_bandwidth_hz_200);
-	Serial.println("ad_bandwidth_hz_200");
-	Serial.println(timeinms);
-*/
 
 	return status;
 }
