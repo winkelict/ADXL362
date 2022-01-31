@@ -109,7 +109,7 @@ short ADXL362::activateAutonomousMotionSwitch(uint16_t minForceInMg, uint16_t ma
 	status = configureActivityWakeupMode(config, minForceInMg);
 	if (status <= 0) return status;
 
-	status = configureInterrupt2(config, ad_status_awake);
+	status = configureInterrupt2(ad_status_awake);
 	if (status <= 0) return status;
 
 	//this just keeps the accelerometer awake until inactivity detected for inactmintimeinms
@@ -171,7 +171,7 @@ short ADXL362::activateCustomDetection(bandwidth bandwidthInHz, sequentialMode s
 	status = configureInterrupt1(config, int1Status, activeLow);
 	if (status <= 0) return status;
 
-	status = configureInterrupt2(config, int2Status, activeLow);
+	status = configureInterrupt2(int2Status, activeLow);
 	if (status <= 0) return status;
 
 	status = activateMode(config);
