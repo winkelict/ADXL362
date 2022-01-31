@@ -160,6 +160,8 @@ This way it configures the ADXL362 like on example page 36 of the datasheet (thr
 	acceleroMeter.init();
 	acceleroMeter.activateAutonomousMotionSwitch();
 	
+*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misc) for calibration instructions*
+
 Again, check for returned error codes! (see Measuring XYZ/Temp).
 Interrupts will occur sequential: Activity->Inactivity interrupts will always occur in this order. Awake=0 (falling) will always follow awake=1 (rising) interrupt.
 
@@ -197,6 +199,8 @@ Can be called without arguments, settings will be equal to Datasheet page 37 (ex
 
 	acceleroMeter.init();
 	acceleroMeter.activateFreeFallDetection();
+
+*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misc) for calibration instructions*
 
 Just like the autonomous motion switch more customizations are possible:
 
@@ -343,11 +347,14 @@ When an interrupt occured the FIFO will contain a maximum of FIFO_SIZE of measur
 
 Execute SelfTest.ino in the example files.
 
-
 The self-test will average both before self-test and self-test x,y,z values over 16 samples and return the **difference** in x,y,z.
 
-
 See datasheet page 41 / Table 22 to interpret results: https://www.analog.com/media/en/technical-documentation/data-sheets/adxl362.pdf
+
+My test results per voltage (in g's):
+- 2.0V, x : 1.21 y : -1.26 z : 1.08
+- 2.2V, x : 1.30 y : -1.46 z : 1.29
+- 3.3V, x : 1.61 y : -1.74 z : 1.49
 
 <a name="misc"></a>
 ### Misc settings (ADXL362.h)
@@ -363,12 +370,28 @@ At request can make an SPI stub available which will simulate the accelerometer 
 
 	//#define ADXL362_USE_SPI_STUB
 
-My measurements identified some corrections to the wakeup mode ODR and the time thresholds so that act/inact times passed to the functions will be accurate. 
-These might have to be adjusted for your specific chip.
+My measurements identified some corrections to the wakeup mode ODR and the time thresholds so that act/inact times passed to the functions will be accurate:
 
-	#define ADXL362_WAKEUPMODE_ACTUALODR 4.20778f
+	#define ADXL362_WAKEUPMODE_ACTUALODR 6.0f
+	
+	#define ADXL362_TIMECORRECTION_INPERCENT 0.0f
 
-	#define ADXL362_TIMECORRECTION_INPERCENT -10
+The timing can be adjusted run-time by executing by calling this function right after init():
+
+
+	executeTimeCalibration(false);
+
+Measure and print chip specific #define values and copy paste them into the .h/header file for compile time adjustment using:
+
+
+	executeTimeCalibration(true);
+
+Measurements for 3 different chips in this order:
+
+ 
+	- Chip revision 	3 / 2 / 2
+	- ODR: 				5 / 6.3 / 7.16
+	- time perc:  		-14 / -5 /-13
 
 <a name="goals"></a>
 ## Goals / Philosophy

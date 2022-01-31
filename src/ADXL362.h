@@ -44,11 +44,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //#define ADXL362_USE_SPI_STUB
 
 
-//said to be 6hz in datasheet, maybe thats the bandwith, this matches my time calculations better
-//calculate better: 60 sec = 59645 in reality (4.20778f), use 4.3 for sub 30 sec values or adjust percentage below
-//240.000 = 239297    / 120.000 = 119954 / 119502
-#define ADXL362_WAKEUPMODE_ACTUALODR 4.20778f
-#define ADXL362_TIMECORRECTION_INPERCENT -10
+//said to be 6hz in datasheet,use executeSelfTest to adjust, use executeSelfTest(true) to print chip specific/new #define's for these values
+#define ADXL362_WAKEUPMODE_ACTUALODR 6.0f
+#define ADXL362_TIMECORRECTION_INPERCENT 0.0f
 
 
 #include "ADXL362Reg.h"
@@ -95,6 +93,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define ADXL362_TEMP_SENSITIVY_AVG_CPERLSB 0.065
 //averaging bias+standard deviation seems to be more accurate
+//TODO: seems to differ per chip
 #define ADXL362_TEMP_BIAS_AVG (350+290)/2
 
 #define ADXL362_FIFO_MAX_SAMPLES 512
@@ -103,8 +102,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define SPI_MAX_WRITEABLE_REG ADXL362_REG_SELF_TEST
 
 //officialy should be minimum 4/100*1000 = 40ms
-#define SELF_TEST_SETTLETIME_INMS 1000
-#define SELF_TEST_NROFSAMPLES 16
+#define ADXL362_SELF_TEST_SETTLETIME_INMS 1000
+#define ADXL362_SELF_TEST_NROFSAMPLES 16
+
+#define ADXL362_CALIBRATE_INTERVAL 3000
 
 typedef enum
 {
@@ -266,6 +267,12 @@ public:
 
     MeasurementInMg executeSelfTest();
 
+    //executes time calibration for 100hz low power and wakeup mode (lowest power mode) as each chip differs
+    //will adjust the default values
+    //ATTENTION: printresults=true will have no effect when not in debug mode!
+    short executeTimeCalibration(bool printResultsWhenDebugMode = false);
+
+
     /**************** SEQUENTIAL MODE: adds functionality to default mode  ***********************/
     //Supports awake bit
     //as this interrupt/bit stays on an can act like a on/off switch in addition to an interrupt unlike an interrupt
@@ -284,8 +291,6 @@ public:
     //The antialiasing filter of the ADXL362 defaults to the more conservative setting, where bandwidth is set to one-fourth the output data rate.
     ADXL362Config configure(bandwidth bandwidthInHz = ad_bandwidth_hz_25, measurementRange measurementRangeInG = ad_range_2G
     												,noiseMode noiseMode = ad_noise_normal, uint16_t externalODRInHz = 0); //implies power measure, still can use interrupts but not lower power/wakeup mode
-
-
 
 
 	/*************** BOTH MODES *************************/
@@ -366,6 +371,7 @@ private:
     int16_t rawToMeasurement(measurementRange range, uint16_t raw);
     float rawToTemp(uint16_t rawTemp);
     uint16_t rangeToCodesPerG(measurementRange range);
+    short measureActualTimeInterval(bandwidth bandwidthInHz);
 
     bool isOn(byte reg, byte bitmask);
 
@@ -391,6 +397,8 @@ private:
     uint8_t  _ss;
     SPIClass *_spi;
 
+    float wakeupModeActualOdr = ADXL362_WAKEUPMODE_ACTUALODR;
+    float timeTresholdCorrectInPerc = ADXL362_TIMECORRECTION_INPERCENT;
 };
 
 #endif /* __ADXL362_H__ */

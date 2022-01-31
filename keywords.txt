@@ -17,6 +17,7 @@ activateAutonomousMotionSwitch	KEYWORD2
 activateFreeFallDetection	KEYWORD2
 activateCustomDetection	KEYWORD2
 executeSelfTest	KEYWORD2
+executeTimeCalibration	KEYWORD2
 configureSequantial	KEYWORD2
 isAwake	KEYWORD2
 configure	KEYWORD2

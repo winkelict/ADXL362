@@ -187,16 +187,16 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	uint32_t y = 0;
 	uint32_t z = 0;
 
-	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
+	for (int i = 0; i<ADXL362_SELF_TEST_NROFSAMPLES; i++) {
 		MeasurementInMg xyz = getXYZ(ad_range_8G);
 		x = x + xyz.x;
 		y = y + xyz.y;
 		z = z + xyz.z;
 	}
 
-	xyzbefore.x = x/SELF_TEST_NROFSAMPLES;
-	xyzbefore.y = y/SELF_TEST_NROFSAMPLES;
-	xyzbefore.z = z/SELF_TEST_NROFSAMPLES;
+	xyzbefore.x = x/ADXL362_SELF_TEST_NROFSAMPLES;
+	xyzbefore.y = y/ADXL362_SELF_TEST_NROFSAMPLES;
+	xyzbefore.z = z/ADXL362_SELF_TEST_NROFSAMPLES;
 
 	//self test on
 	on(ADXL362_REG_SELF_TEST,ADXL362_SELF_TEST_ST,ADXL362_SELF_TEST_ST);
@@ -206,9 +206,9 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	z = 0;
 
 	//=40ms
-	delay(SELF_TEST_SETTLETIME_INMS);
+	delay(ADXL362_SELF_TEST_SETTLETIME_INMS);
 
-	for (int i = 0; i<SELF_TEST_NROFSAMPLES; i++) {
+	for (int i = 0; i<ADXL362_SELF_TEST_NROFSAMPLES; i++) {
 		MeasurementInMg xyz = getXYZ(ad_range_8G);
 		x = x + xyz.x;
 		y = y + xyz.y;
@@ -219,9 +219,9 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	on(ADXL362_REG_SELF_TEST,0x00,ADXL362_SELF_TEST_ST);
 
 	MeasurementInMg xyzafter;
-	xyzafter.x = x/SELF_TEST_NROFSAMPLES;
-	xyzafter.y = y/SELF_TEST_NROFSAMPLES;
-	xyzafter.z = z/SELF_TEST_NROFSAMPLES;
+	xyzafter.x = x/ADXL362_SELF_TEST_NROFSAMPLES;
+	xyzafter.y = y/ADXL362_SELF_TEST_NROFSAMPLES;
+	xyzafter.z = z/ADXL362_SELF_TEST_NROFSAMPLES;
 
 
 	xyzafter.x = xyzafter.x-xyzbefore.x;
@@ -229,6 +229,83 @@ MeasurementInMg ADXL362::executeSelfTest() {
 	xyzafter.z = xyzafter.z-xyzbefore.z;
 
 	return xyzafter;
+}
+
+short ADXL362::executeTimeCalibration(bool printResultsWhenDebugMode) {
+	short status=1;
+
+	short timeinms;
+
+	//reset current values
+	timeTresholdCorrectInPerc = 0;
+	wakeupModeActualOdr = 10;
+
+	//TODO: low power most important, so calibrate on low hz, chip Revision 3 seems to result in to low times in higher 25hz+ bandwiths
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_3_125);
+	if (timeinms < 0) return -180;
+
+	timeTresholdCorrectInPerc = (ADXL362_CALIBRATE_INTERVAL/(float)timeinms*100.0) - 100.0;
+
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_wakeup_ultralowpower);
+	if (timeinms < 0) return -181;
+
+	wakeupModeActualOdr = wakeupModeActualOdr * (ADXL362_CALIBRATE_INTERVAL/(float)timeinms);  //factor
+
+	#ifdef ADXL362_DEBUG
+	if (printResultsWhenDebugMode) {
+		Serial.println(F("Replace in .h to make permanent: "));
+		Serial.print(F("#define ADXL362_WAKEUPMODE_ACTUALODR "));
+		Serial.print(wakeupModeActualOdr);
+		Serial.println(F("f"));
+		Serial.print(F("#define ADXL362_TIMECORRECTION_INPERCENT "));
+		Serial.print(timeTresholdCorrectInPerc);
+		Serial.println(F("f"));
+	}
+	#endif
+	/*
+	//fault can also be in precision of my time calc function??
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_wakeup_ultralowpower);
+	Serial.println("ad_bandwidth_hz_6_wakeup_ultralowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_3_125);
+	Serial.println("ad_bandwidth_hz_3_125");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_25_lowpower);
+	Serial.println("ad_bandwidth_hz_6_25_lowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_6_25);
+	Serial.println("ad_bandwidth_hz_6_25");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_12_5_lowpower);
+	Serial.println("ad_bandwidth_hz_12_5_lowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_12_5);
+	Serial.println("ad_bandwidth_hz_12_5");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_25_lowpower);
+	Serial.println("ad_bandwidth_hz_25_lowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_25);
+	Serial.println("ad_bandwidth_hz_25");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_50_lowpower);
+	Serial.println("ad_bandwidth_hz_50_lowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_50);
+	Serial.println("ad_bandwidth_hz_50");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_100_lowpower);
+	Serial.println("ad_bandwidth_hz_100_lowpower");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_100);
+	Serial.println("ad_bandwidth_hz_100");
+	Serial.println(timeinms);
+	timeinms = measureActualTimeInterval(ad_bandwidth_hz_200);
+	Serial.println("ad_bandwidth_hz_200");
+	Serial.println(timeinms);
+*/
+
+	return status;
 }
 
 
@@ -251,6 +328,8 @@ ADXL362Config ADXL362::configureSequentialMode(bool linkMode, bandwidth bandwidt
 			statuscode = -11; //autosleep wont work, accelerometer will always be in lowest power mode/wakeup mode
 	#endif
 
+	_powerModeInProgress = true;
+
 	if (statuscode > 0) {
 		config = configure(bandwidthInHz, measurementRangeInG, noiseMode, externalODRInHz);
 		statuscode = config.status;
@@ -271,8 +350,6 @@ ADXL362Config ADXL362::configureSequentialMode(bool linkMode, bandwidth bandwidt
 		config.status = 1;
 		config.externalODRInHz =externalODRInHz;
 	}
-
-	_powerModeInProgress = true;
 
 	return config;
 }
@@ -304,6 +381,8 @@ ADXL362Config ADXL362::configure(bandwidth bandwidthInHz, measurementRange measu
 			status = -40;
 	#endif
 
+	_powerModeInProgress = true;
+
 	if (status > 0) {
 		if (bandwidthInHz != ad_bandwith_externalODR && bandwidthInHz !=ad_bandwidth_hz_6_wakeup_ultralowpower) {
 			status = on2(ADXL362_REG_FILTER_CTL,measurementRangeInG,AD_RANGE_OFF,bandwidthInHz,AD_BANDWIDTH_OFF);
@@ -324,8 +403,6 @@ ADXL362Config ADXL362::configure(bandwidth bandwidthInHz, measurementRange measu
 		config.status = 1;
 		config.externalODRInHz =externalODRInHz;
 	}
-
-	_powerModeInProgress = true;
 
 	return config;
 }
@@ -843,7 +920,6 @@ short ADXL362::setPowerMode(powerMode mode) {
 */
 int32_t ADXL362::calculateTimeThreshold(uint32_t timeInMS, bandwidth bandwidthInHz, bool forInactive, uint16_t externalODRInHz) {
 	float odr;
-	//float odrcorrection = ADXL362_NONWAKEUP_ODRCORRECTION_INPERCENT/100.0;
 
 	//assuming that wakeup/autosleep not possible with external ODR (active=inactive bandwith=odr same for both)
 	if (bandwidthInHz == ad_bandwith_externalODR)
@@ -851,7 +927,7 @@ int32_t ADXL362::calculateTimeThreshold(uint32_t timeInMS, bandwidth bandwidthIn
 	else {
 		switch (bandwidthInHz) {
 		case ad_bandwidth_hz_6_wakeup_ultralowpower:
-			odr = ADXL362_WAKEUPMODE_ACTUALODR;
+			odr = wakeupModeActualOdr;
 			break;
 		case ad_bandwidth_hz_3_125:
 		case ad_bandwidth_hz_6_25_lowpower:
@@ -880,7 +956,7 @@ int32_t ADXL362::calculateTimeThreshold(uint32_t timeInMS, bandwidth bandwidthIn
 	}
 
 	//uint32 is to make sure the multiplication result of odr*timeInMs is not clipped, not sure where its needed and not
-	int32_t threshold = (int32_t)(((float)timeInMS * odr)/1000.0)*(1.0+ADXL362_TIMECORRECTION_INPERCENT/100.0); //max 5242.000
+	int32_t threshold = (int32_t)(((float)timeInMS * odr)/1000.0)*(1.0+timeTresholdCorrectInPerc/100.0); //max 5242.000
 
 
 	//datasheet: To minimize false positive motion triggers, set the TIME_ACT register greater than 1.
@@ -955,6 +1031,41 @@ uint16_t ADXL362::rangeToCodesPerG(measurementRange range) {
 	default:
 		return ADXL362_2G_THRESHOLD_LSBPERG; //should not get here
 	}
+}
+
+short ADXL362::measureActualTimeInterval(bandwidth bandwidthInHz) {
+	short status=1;
+	//ATTENTION: when bandwith = ad_bandwidth_hz_extODR_sampleAndClock, not INT can be set or used
+	ADXL362Config config = configure(bandwidthInHz);
+
+	if (config.status <= 0) return config.status;
+
+	//TODO: maximum force macro definition
+	//TODO: measure time macro def
+	status = configureInActivity(config, 2000, ADXL362_CALIBRATE_INTERVAL);
+	if (status <=0) return status;
+
+	status = activateMode(config);
+	if (status <=0) return status;
+
+	unsigned long start = millis();
+	unsigned long lastintervalmeasureinms = 0;
+	unsigned long actualintervalinms = 0;
+	bool inactoccured = false;
+	//measure
+	while ((millis()-start) < 30000) {
+		bool inactoccured = isInactInterrupt();
+		if (inactoccured) {
+			delay(10); //small delay, arduino can be to fast and acc cant reset the status in time, this causes measurement to be 0
+			if (lastintervalmeasureinms > 0) {
+				actualintervalinms = (millis()-lastintervalmeasureinms);
+				break;
+			}
+			lastintervalmeasureinms = millis();
+		}
+	}
+
+	return actualintervalinms;
 }
 
 
@@ -1131,6 +1242,7 @@ short ADXL362::setReg(byte reg, uint16_t val, bool twoBytes) {
     	if (!twoBytes) {
     		uint16_t newval = getReg(reg);
 			if (val != newval) {
+				/*
 				#ifdef ADXL362_DEBUG
 				Serial.print("REG 0x");
 				Serial.print(reg, HEX);
@@ -1139,13 +1251,13 @@ short ADXL362::setReg(byte reg, uint16_t val, bool twoBytes) {
 				Serial.print(" value read: 0x");
 				Serial.print(newval,HEX);
 				Serial.print(" ");
-				#endif
+				#endif*/
 				return -201;
 			}
     	} else {
     		uint16_t newval = getReg16(reg);
     		if (val !=  getReg16(reg)) {
-				#ifdef ADXL362_DEBUG
+    			/*#ifdef ADXL362_DEBUG
 				Serial.print("REG16 0x");
 				Serial.print(reg, HEX);
 				Serial.print(" readback failed, value written: 0x");
@@ -1153,7 +1265,7 @@ short ADXL362::setReg(byte reg, uint16_t val, bool twoBytes) {
 				Serial.print(" value read: 0x");
 				Serial.print(newval,HEX);
 				Serial.print(" ");
-				#endif
+				#endif*/
     			return -202;
     		}
 		}
