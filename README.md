@@ -160,7 +160,7 @@ This way it configures the ADXL362 like on example page 36 of the datasheet (thr
 	acceleroMeter.init();
 	acceleroMeter.activateAutonomousMotionSwitch();
 	
-*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misc) for calibration instructions*
+*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misctiming) for calibration instructions*
 
 Again, check for returned error codes! (see Measuring XYZ/Temp).
 Interrupts will occur sequential: Activity->Inactivity interrupts will always occur in this order. Awake=0 (falling) will always follow awake=1 (rising) interrupt.
@@ -200,7 +200,7 @@ Can be called without arguments, settings will be equal to Datasheet page 37 (ex
 	acceleroMeter.init();
 	acceleroMeter.activateFreeFallDetection();
 
-*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misc) for calibration instructions*
+*Optionally execute executeTimeCalibration() after init, please see [ Misc settings. ](#misctiming) for calibration instructions*
 
 Just like the autonomous motion switch more customizations are possible:
 
@@ -376,6 +376,7 @@ My measurements identified some corrections to the wakeup mode ODR and the time 
 	
 	#define ADXL362_TIMECORRECTION_INPERCENT 0.0f
 
+<a name="misctiming"></a>
 The timing can be adjusted run-time by executing by calling this function right after init():
 
 
@@ -390,7 +391,7 @@ Measurements for 3 different chips in this order:
 
  
 	- Chip revision 	3 / 2 / 2
-	- ODR: 				5 / 6.3 / 7.16
+	- ODR: 			5 / 6.3 / 7.16
 	- time perc:  		-14 / -5 /-13
 
 <a name="goals"></a>
