@@ -23,6 +23,7 @@ isAwake	KEYWORD2
 configure	KEYWORD2
 configureInterrupt1	KEYWORD2
 configureInterrupt2	KEYWORD2
+disableInterrupt2	KEYWORD2
 configureActivity	KEYWORD2
 configureInActivity	KEYWORD2
 configureActivityWakeupMode	KEYWORD2
