@@ -378,7 +378,7 @@ The library default's to the following settings which might or might not be accu
 	#define ADXL362_TIMECORRECTION_INPERCENT 0.0f
 
 <a name="misctiming"></a>
-The timing can be adjusted run-time by executing by calling this function right after init():
+The timing can be adjusted run-time by executing by calling this function right after init(), execution will take approx. 12 seconds:
 
 
 	executeTimeCalibration(false);
