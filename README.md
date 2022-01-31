@@ -381,7 +381,7 @@ The library default's to the following settings which might or might not be accu
 The timing can be adjusted run-time by executing by calling this function right after init(), execution will take approx. 12 seconds:
 
 
-	executeTimeCalibration(false);
+	executeTimeCalibration();
 
 Measure and print chip specific #define values and copy paste them into the .h/header file for compile time adjustment using:
 
